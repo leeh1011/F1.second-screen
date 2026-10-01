@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.api.router import api_router
 from app.services.websocket_manager import ws_manager
 from app.ml.predictor import predictor_engine
-from app.services.gemini_service import gemini_commentary_service
+from backend.app.live.gemini_service import gemini_commentary_service
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

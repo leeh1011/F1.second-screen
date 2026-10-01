@@ -2,9 +2,9 @@ from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
-from app.services.openf1_service import get_sessions, get_drivers
+from backend.app.live.openf1_service import get_sessions, get_drivers
 from app.ml.predictor import predictor_engine
-from app.services.gemini_service import gemini_commentary_service
+from backend.app.live.gemini_service import gemini_commentary_service
 
 api_router = APIRouter()
 
