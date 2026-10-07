@@ -41,3 +41,5 @@ next-env.d.ts
 backend/data/*.db
 backend/data/cache/*
 !backend/data/cache/.gitkeep
+/backend/data/openf1/
+/backend/data/processed/

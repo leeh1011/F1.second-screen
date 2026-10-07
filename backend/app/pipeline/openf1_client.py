@@ -68,10 +68,7 @@ def fetch_data(endpoint, refresh=False, **params):
             if error.code == 429:
                 delay = max(delay, 60)
 
-            print(
-                f"[재시도] {endpoint}: "
-                f"HTTP {error.code}, {delay}초 대기"
-            )
+            print(f"[재시도] {endpoint}: HTTP {error.code}, {delay}초 대기")
             time.sleep(delay)
 
         except (URLError, TimeoutError):
@@ -107,7 +104,9 @@ def get_sessions(year, country_name, session_name="Race", refresh=False):
 
 def get_drivers(session_key, refresh=False):
     return fetch_data(
-        "drivers", refresh=refresh, session_key=session_key
+        "drivers",
+        refresh=refresh,
+        session_key=session_key,
     )
 
 
@@ -122,7 +121,9 @@ def get_intervals(session_key, driver_number=None, refresh=False):
 
 def get_positions(session_key, refresh=False):
     return fetch_data(
-        "position", refresh=refresh, session_key=session_key
+        "position",
+        refresh=refresh,
+        session_key=session_key,
     )
 
 
