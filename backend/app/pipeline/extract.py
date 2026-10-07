@@ -3,6 +3,7 @@ import math
 import re
 from bisect import bisect_right
 from collections import Counter
+from functools import lru_cache
 from dataclasses import dataclass
 
 import pandas as pd
@@ -18,6 +19,10 @@ class Config:
     min_pace_laps: int = 2
 
 
+CONTROL_POLICY_VERSION = "ending-then-track-clear-v2"
+
+
+@lru_cache(maxsize=200000)
 def timestamp(value):
     return pd.to_datetime(value, utc=True)
 
@@ -37,6 +42,7 @@ def frame(rows):
 def build_control(rows):
     events = []
     neutral = set()
+    ending = set()
     yellow = set()
     retired = set()
     running = False
@@ -64,12 +70,16 @@ def build_control(rows):
             neutral.add('RED')
         if 'VIRTUAL SAFETY CAR DEPLOYED' in msg or msg == 'VSC DEPLOYED':
             neutral.add('VSC')
+            ending.discard('VSC')
         elif 'SAFETY CAR DEPLOYED' in msg:
             neutral.add('SC')
+            ending.discard('SC')
         elif msg == 'VSC ENDING' or 'VIRTUAL SAFETY CAR ENDING' in msg:
             neutral.add('VSC')
+            ending.add('VSC')
         elif 'SAFETY CAR IN THIS LAP' in msg:
             neutral.add('SC')
+            ending.add('SC')
 
         explicit_green = (
             scope == 'TRACK'
@@ -79,8 +89,18 @@ def build_control(rows):
         )
         if explicit_green:
             neutral.clear()
+            ending.clear()
             yellow.clear()
             running = True
+
+        # TRACK CLEAR alone is not sufficient to end an SC/VSC deployment.
+        # Accept it only after that mode's explicit ending/in-this-lap message.
+        if scope == 'TRACK' and flag == 'CLEAR' and msg == 'TRACK CLEAR':
+            neutral.difference_update(ending & {'SC', 'VSC'})
+            ending.clear()
+            yellow.clear()
+        if running and not ended and msg == 'DRS ENABLED' and neutral:
+            unresolved.append('DRS enabled while neutralization unresolved: ' + '|'.join(sorted(neutral)))
 
         if flag in ('YELLOW', 'DOUBLE YELLOW'):
             yellow.add(sector_key if scope == 'SECTOR' else 'track')
@@ -360,13 +380,7 @@ def extract_candidates(race_data, config=Config()):
                     'time_within_1_sec': None, 'gap_mean_last_lap': None,
                     'gap_trend_last_lap': None, 'gap_1_lap_ago': None,
                     'gap_history_complete': False, 'gap_history_window_seconds': None})
-        reset_reasons = [
-            reason
-            for reason in excluded
-            if reason != "lap_alignment_uncertain"
-        ]
-
-        if reset_reasons:
+        if [reason for reason in excluded if reason != 'lap_alignment_uncertain']:
             active.pop(attacker, None)
         else:
             battle = active.get(attacker)
@@ -395,10 +409,7 @@ def extract_candidates(race_data, config=Config()):
                 duration = data['completed'][ci]['duration'] if ci >= 0 else None
                 row.update(history_features(battle['points'], at, float(gap), duration))
                 row.update({'battle_id': battle['id'], 'battle_age_seconds': age_seconds,
-                            'battle_ready': (
-                                row['offline_eligible']
-                                and age_seconds >= config.min_battle_seconds
-                            ),
+                            'battle_ready': row['offline_eligible'] and age_seconds >= config.min_battle_seconds,
                             'time_within_1_sec': (at - battle['within']).total_seconds() if battle['within'] is not None else 0.0})
         result.append(row)
     if not result:
