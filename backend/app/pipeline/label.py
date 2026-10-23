@@ -332,6 +332,81 @@ def validate_labels(labeled, data):
     def rank(driver, at):
         i = bisect_right(times.get(driver, []), at) - 1
         return positions[driver][i][1] if i >= 0 else None
+    # Rebuild interruption checks from raw data. Do not trust emitted censor
+    # metadata or call make_labels(): that would repeat the same decision.
+    control, unresolved = build_control(data['race_control'])
+    if unresolved:
+        raise ValueError(f'검증 중 제어 메시지 해석 미완료: {unresolved}')
+    control_times = [e['time'] for e in control]
+    pit_laps = {(int(x['driver_number']), int(x['lap_number']))
+                for x in data['pit'] if x.get('lap_number') is not None}
+    update_times = defaultdict(list)
+    for driver, at in raw_gaps:
+        update_times[driver].append(at)
+    for driver in update_times:
+        update_times[driver].sort()
+
+    def raw_observation_errors(a, d, start, stop):
+        problems = set()
+        if pd.isna(stop) or stop < start:
+            return {'raw_observation_window'}
+        states = [state_at(control, control_times, start)]
+        states += control[bisect_right(control_times, start):bisect_right(control_times, stop)]
+        if any(not e['running'] for e in states):
+            problems.add('raw_session_end')
+        if any(e['neutralized'] or e['yellow_active'] for e in states):
+            problems.add('raw_race_control')
+        if any(a in e['retired'] or d in e['retired'] for e in states):
+            problems.add('raw_retirement')
+        for driver in (a, d):
+            starts = raw_start_times.get(driver, [])
+            first = bisect_right(starts, start) - 1
+            if first < 0:
+                problems.add('raw_missing_lap')
+                continue
+            rows = raw_laps[driver]
+            covered, previous = start, None
+            for j in range(first, bisect_right(starts, stop)):
+                lap = rows[j]
+                number = int(lap['lap_number'])
+                if starts[j] > covered or (previous is not None and number != previous + 1):
+                    problems.add('raw_lap_data_gap')
+                previous = number
+                if (driver, number) in pit_laps or lap.get('is_pit_out_lap') is True:
+                    problems.add('raw_pit_related')
+                duration = lap.get('lap_duration')
+                if (isinstance(duration, bool) or not isinstance(duration, (int, float))
+                        or not math.isfinite(duration) or duration <= 0):
+                    problems.add('raw_incomplete_lap')
+                else:
+                    covered = max(covered, completion_by_number[driver, number])
+            if covered < stop:
+                problems.add('raw_observation_end')
+
+            # Split into constant-rank periods: leaders need no interval
+            # heartbeat; losing the lead starts a fresh grace period.
+            pt = times.get(driver, [])
+            boundaries = sorted(set([start, stop] + pt[
+                bisect_right(pt, start):bisect_right(pt, stop)]))
+            updates = update_times[driver]
+            last_index = bisect_right(updates, start) - 1
+            last = updates[last_index] if last_index >= 0 else None
+            previous_rank = rank(driver, start)
+            for left, right in zip(boundaries, boundaries[1:]):
+                current_rank = rank(driver, left)
+                if previous_rank == 1 and current_rank != 1:
+                    last = left
+                fresh = updates[bisect_right(updates, left):bisect_right(updates, right)]
+                if current_rank != 1:
+                    chain = ([last] if last is not None else []) + fresh + [right]
+                    if last is None or any((b - a).total_seconds() > Config().max_update_seconds
+                                           for a, b in zip(chain, chain[1:])):
+                        problems.add('raw_interval_coverage')
+                if fresh:
+                    last = fresh[-1]
+                previous_rank = current_rank
+        return problems
+
     errors = []
     def check(condition, row, name):
         if not condition:
@@ -353,6 +428,9 @@ def validate_labels(labeled, data):
         expected = None if current_index < 0 else completion_by_number.get(
             (a, int(lr[current_index]['lap_number']) + 2))
         check(expected is not None and end == expected, index, 'third_completion')
+        observed_until = r.label_confirmation_time if y == 1 else end
+        for problem in sorted(raw_observation_errors(a, d, start, observed_until)):
+            check(False, index, problem)
         if y == 1:
             event, confirmed = r.label_event_time, r.label_confirmation_time
             check((a, d, event) in raw_events, index, 'raw_event')
