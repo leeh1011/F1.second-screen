@@ -19,7 +19,7 @@ class Config:
     min_pace_laps: int = 2
 
 
-CONTROL_POLICY_VERSION = "ending-then-track-clear-v2"
+CONTROL_POLICY_VERSION = "ending-track-clear-sc-replaces-vsc-v3"
 
 
 @lru_cache(maxsize=200000)
@@ -72,6 +72,8 @@ def build_control(rows):
             neutral.add('VSC')
             ending.discard('VSC')
         elif 'SAFETY CAR DEPLOYED' in msg:
+            neutral.discard('VSC')
+            ending.discard('VSC')
             neutral.add('SC')
             ending.discard('SC')
         elif msg == 'VSC ENDING' or 'VIRTUAL SAFETY CAR ENDING' in msg:
