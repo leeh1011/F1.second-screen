@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Kimi Antonelli", "team": "Mercedes", "number": 1 },
+  { "id": 2, "name": "George Russell", "team": "Mercedes", "number": 2 },
+  { "id": 3, "name": "Lewis Hamilton", "team": "Ferrari", "number": 3 },
+  { "id": 4, "name": "Max Verstappen", "team": "Red Bull", "number": 4 },
+  { "id": 5, "name": "Charles Leclerc", "team": "Ferrari", "number": 5 },
+  { "id": 6, "name": "Lando Norris", "team": "McLaren", "number": 6 }
+]
