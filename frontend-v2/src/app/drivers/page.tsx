@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Card from "@/components/Card";
 import SearchBox from "@/components/SearchBox";
 import TeamFilter from "@/components/TeamFilter";
+import { getDrivers } from "@/lib/api";
 import type { Driver } from "@/types";
 
 const teams = ["All", "Mercedes", "Ferrari", "Red Bull", "McLaren"];
@@ -18,9 +20,7 @@ export default function DriversPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/drivers.json");
-        if (!res.ok) throw new Error("서버 오류: " + res.status);
-        const data: Driver[] = await res.json();
+        const data = await getDrivers();
         setDrivers(data);
       } catch {
         setError("데이터를 불러오지 못했습니다.");
@@ -55,7 +55,9 @@ export default function DriversPage() {
       {!loading && !error && (
         <div className="row">
           {visibleDrivers.map((d) => (
-            <Card key={d.id} name={d.name} team={d.team} number={d.number} />
+            <Link key={d.id} href={`/drivers/${d.id}`} className="card-link">
+              <Card name={d.name} team={d.team} number={d.number} />
+            </Link>
           ))}
         </div>
       )}
