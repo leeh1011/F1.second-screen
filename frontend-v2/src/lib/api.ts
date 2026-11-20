@@ -1,5 +1,7 @@
-import type { Driver } from "@/types";
+import type { Driver,LiveState } from "@/types";
 import mockDrivers from "../../public/drivers.json";
+import mockLive from "../../public/mock/live.json";
+
 
 // 백엔드 주소. 설정하지 않으면 mock 데이터를 사용한다.
 // 예) .env.local 에 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -21,4 +23,8 @@ export async function getDrivers(): Promise<Driver[]> {
 export async function getDriver(id: number): Promise<Driver | undefined> {
   const drivers = await getDrivers();
   return drivers.find((d) => d.id === id);
+}
+
+export async function getLiveState():Promise<LiveState>{
+  return mockLive as LiveState;
 }

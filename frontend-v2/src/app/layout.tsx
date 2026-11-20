@@ -27,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <nav>
             <Link href="/">홈</Link>
             <Link href="/drivers">드라이버</Link>
+            <Link href="/live">라이브</Link>
           </nav>
         </header>
         <main className="content">{children}</main>
