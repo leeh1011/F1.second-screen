@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   description: "F1 드라이버 정보 서비스",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
@@ -27,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <nav>
             <Link href="/">홈</Link>
             <Link href="/drivers">드라이버</Link>
+            <Link href="/live">라이브</Link>
           </nav>
         </header>
         <main className="content">{children}</main>
