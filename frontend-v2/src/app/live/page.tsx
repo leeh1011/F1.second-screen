@@ -64,6 +64,29 @@ export default function LivePage() {
   // 지금 장면에서 선택된 배틀 (추월 등으로 끝났으면 undefined)
   const selectedBattle = state.battles.find((b) => b.battle_id === selectedId);
 
+  // 선택된 배틀이 처음 나온 기록 (끝난 뒤에도 누가 누구를 쫓았는지 알기 위해)
+  const selectedOrigin = selectedId
+    ? replay.frames.flatMap((f) => f.battles).find((b) => b.battle_id === selectedId)
+    : undefined;
+
+  // 배틀이 끝났다면 그 결과 이벤트 (예: "HAM → RUS 추월 성공")
+  const selectedOutcome =
+    selectedOrigin && !selectedBattle
+      ? state.events.find(
+          (e) =>
+            e.message.startsWith(`${selectedOrigin.attacker_code} → ${selectedOrigin.defender_code}`) &&
+            e.message.includes("추월")
+        ) ?? null
+      : null;
+
+  // SC·VSC·황색기에서는 모델이 예측하지 않는다 (학습에서도 제외한 상황)
+  const PAUSE_REASON: Record<string, string> = {
+    SC: "세이프티카 상황이라 예측을 잠시 멈췄어요.",
+    VSC: "가상 세이프티카 상황이라 예측을 잠시 멈췄어요.",
+    YELLOW: "옐로 플래그 구간이라 예측을 잠시 멈췄어요.",
+  };
+  const pauseReason = PAUSE_REASON[state.track_status] ?? null;
+
   const prevState = frameIndex > 0 ? replay.frames[frameIndex - 1] : null;
 
   // 이전 장면에서 같은 배틀의 확률 찾기 (없으면 null)
@@ -84,7 +107,26 @@ export default function LivePage() {
       <div className="live-grid">
         <section aria-labelledby="battles-title">
           <h2 id="battles-title" className="section-title">추월 가능성이 높은 배틀</h2>
-          {top3.length === 0 ? (
+          {pauseReason ? (
+            <>
+              <p className="pause-banner" role="status">
+                {pauseReason} 경기가 재개되면 다시 계산해요.
+              </p>
+              <div className="battle-list">
+                {[...state.battles]
+                  .sort((a, b) => a.gap - b.gap)
+                  .map((b) => (
+                    <BattleCard
+                      key={b.battle_id}
+                      battle={b}
+                      prevProbability={null}
+                      onSelect={() => setSelectedId(b.battle_id)}
+                      pausedLabel="경기 재개 후 다시 계산"
+                    />
+                  ))}
+              </div>
+            </>
+          ) : top3.length === 0 ? (
             <p className="state-note">지금은 예측할 수 있는 배틀이 없어요.</p>
           ) : (
             <div className="battle-list">
@@ -125,7 +167,15 @@ export default function LivePage() {
         <BattleDetail
           battleId={selectedId}
           battle={selectedBattle}
+          attackerCode={selectedOrigin?.attacker_code ?? ""}
+          defenderCode={selectedOrigin?.defender_code ?? ""}
+          outcome={selectedOutcome}
+          pauseReason={pauseReason}
           history={history}
+          lap={state.lap}
+          playing={playing}
+          atEnd={frameIndex === replay.frames.length - 1}
+          onTogglePlay={() => setPlaying((p) => !p)}
           onClose={() => setSelectedId(null)}
         />
       )}

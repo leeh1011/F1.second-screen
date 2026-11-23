@@ -6,12 +6,13 @@ type BattleCardProps = {
   prevProbability: number | null;
   featured?: boolean; // 가장 확률이 높은 배틀은 크게 보여 준다
   onSelect?: () => void; // "자세히"를 눌렀을 때 (없으면 버튼을 숨김)
+  pausedLabel?: string; // SC 등으로 예측을 멈췄을 때 보여 줄 이유
 };
 
 const LANE_SECONDS = 2.5; // 레인 전체가 나타내는 간격(초)
 const NEAR_SECONDS = 1.0; // 추월 기회로 보는 간격(초)
 
-function BattleCard({ battle, prevProbability, featured = false, onSelect }: BattleCardProps) {
+function BattleCard({ battle, prevProbability, featured = false, onSelect, pausedLabel }: BattleCardProps) {
   const {
     attacker_code, defender_code, attacker_position,
     gap, attacker_tyre, defender_tyre, probability,
@@ -71,10 +72,17 @@ function BattleCard({ battle, prevProbability, featured = false, onSelect }: Bat
 
       <div className="battle-prob">
         {percent === null ? (
-          <>
-            <span className="prob-na">계산 불가</span>
-            <span className="prob-label">0%가 아닌 예측 불가</span>
-          </>
+          pausedLabel ? (
+            <>
+              <span className="prob-na prob-paused">예측 중지</span>
+              <span className="prob-label">{pausedLabel}</span>
+            </>
+          ) : (
+            <>
+              <span className="prob-na">계산 불가</span>
+              <span className="prob-label">데이터가 부족해요 (0%와 다름)</span>
+            </>
+          )
         ) : (
           <>
             <span className="prob-value">

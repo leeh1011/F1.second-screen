@@ -1031,3 +1031,43 @@ input {
 .detail-facts dd { margin: 0; }
 .detail-tyres { display: flex; gap: 8px; align-items: center; }
 .detail-note { margin-top: 24px; font-size: 12px; color: var(--sidewall); }
+
+/* ---------- 예측 중지 · 배틀 결과 ---------- */
+.pause-banner {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--flag-sc);
+  border-radius: var(--radius);
+  background: rgba(255, 159, 28, 0.1);
+  color: var(--ink);
+  font-size: 14px;
+}
+.prob-paused { color: var(--flag-sc); }
+
+.detail-outcome {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--timing-wash);
+  font-weight: 600;
+}
+.detail-outcome-lap { color: var(--timing); font-family: var(--display); font-size: 18px; }
+
+/* 패널 안 재생 컨트롤 (패널이 재생 바를 가려도 재생·일시정지 가능) */
+.detail-controls { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.detail-play {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--timing);
+  color: var(--tarmac);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.detail-play:disabled { background: var(--gantry); color: var(--sidewall); cursor: not-allowed; }
+.detail-lap { font-family: var(--display); font-size: 18px; color: var(--sidewall); }

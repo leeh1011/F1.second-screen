@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
-import type { Battle } from "@/types";
+import type { Battle, LiveEvent } from "@/types";
 import TyreMark from "./TyreMark";
 
 type HistoryPoint = { lap: number; probability: number | null; gap: number };
@@ -9,13 +9,24 @@ type HistoryPoint = { lap: number; probability: number | null; gap: number };
 type BattleDetailProps = {
   battleId: string;
   battle: Battle | undefined; // 지금 장면의 배틀 (끝났으면 undefined)
+  attackerCode: string;
+  defenderCode: string;
+  outcome: LiveEvent | null; // 끝난 배틀의 결과 이벤트
+  pauseReason: string | null; // SC 등으로 예측을 멈춘 이유
   history: HistoryPoint[];
+  lap: number; // 지금 장면의 랩
+  playing: boolean;
+  atEnd: boolean;
+  onTogglePlay: () => void;
   onClose: () => void;
 };
 
 const lapTick = (v: number) => `${v}랩`;
 
-function BattleDetail({ battleId, battle, history, onClose }: BattleDetailProps) {
+function BattleDetail({
+  battleId, battle, attackerCode, defenderCode, outcome, pauseReason, history,
+  lap, playing, atEnd, onTogglePlay, onClose,
+}: BattleDetailProps) {
   const first = history[0];
   const last = history[history.length - 1];
 
@@ -30,14 +41,31 @@ function BattleDetail({ battleId, battle, history, onClose }: BattleDetailProps)
           </button>
         </header>
 
-        {battle ? (
-          <p className="detail-who">
-            <span className="who-code">{battle.attacker_code}</span>
-            <span className="detail-arrow">→</span>
-            <span className="who-code">{battle.defender_code}</span>
-          </p>
-        ) : (
-          <p className="state-note">이 배틀은 끝났어요. (추월 또는 간격 벌어짐)</p>
+        <div className="detail-controls">
+          <button type="button" className="detail-play" onClick={onTogglePlay} disabled={atEnd}>
+            {playing && !atEnd ? "일시정지" : "재생"}
+          </button>
+          <span className="detail-lap">{lap}랩</span>
+        </div>
+
+        <p className="detail-who">
+          <span className="who-code">{attackerCode}</span>
+          <span className="detail-arrow">→</span>
+          <span className="who-code">{defenderCode}</span>
+        </p>
+
+        {!battle &&
+          (outcome ? (
+            <p className="detail-outcome">
+              <span className="detail-outcome-lap">{outcome.lap}랩</span>
+              {attackerCode}이(가) {defenderCode}을(를) 추월했어요.
+            </p>
+          ) : (
+            <p className="state-note">간격이 벌어져 이 배틀은 끝났어요.</p>
+          ))}
+
+        {battle && battle.probability === null && pauseReason && (
+          <p className="pause-banner">{pauseReason}</p>
         )}
 
         <h3 className="detail-sub">3랩 내 추월 확률 (%)</h3>
