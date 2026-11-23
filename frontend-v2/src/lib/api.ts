@@ -1,6 +1,7 @@
-import type { Driver,LiveState } from "@/types";
+import type { Driver,LiveState,ReplayData } from "@/types";
 import mockDrivers from "../../public/drivers.json";
 import mockLive from "../../public/mock/live.json";
+import mockReplay from "../../public/mock/replay.json"
 
 
 // 백엔드 주소. 설정하지 않으면 mock 데이터를 사용한다.
@@ -27,4 +28,8 @@ export async function getDriver(id: number): Promise<Driver | undefined> {
 
 export async function getLiveState():Promise<LiveState>{
   return mockLive as LiveState;
+}
+
+export async function getReplay():Promise<ReplayData>{
+  return mockReplay as ReplayData;
 }

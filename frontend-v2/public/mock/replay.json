@@ -1,0 +1,700 @@
+{
+  "race_name": "2024 바레인 GP",
+  "frames": [
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 22,
+      "total_laps": 57,
+      "track_status": "GREEN",
+      "battles": [
+        {
+          "battle_id": "b-001",
+          "prediction_time": "2024-03-02T15:40:30Z",
+          "lap": 22,
+          "attacker_code": "HAM",
+          "defender_code": "RUS",
+          "attacker_position": 5,
+          "gap": 0.6,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 13 },
+          "defender_tyre": { "compound": "HARD", "age": 21 },
+          "probability": 0.66
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:40:30Z",
+          "lap": 22,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.9,
+          "attacker_tyre": { "compound": "SOFT", "age": 5 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 17 },
+          "probability": 0.41
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:40:30Z",
+          "lap": 22,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 1.1,
+          "attacker_tyre": { "compound": "HARD", "age": 29 },
+          "defender_tyre": { "compound": "HARD", "age": 27 },
+          "probability": 0.28
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:40:30Z",
+          "lap": 22,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 1.8,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 1 },
+          "defender_tyre": { "compound": "HARD", "age": 24 },
+          "probability": null
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 19 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 3.0,
+          "tyre": { "compound": "HARD", "age": 24 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 1.8,
+          "tyre": { "compound": "MEDIUM", "age": 1 }
+        },
+        {
+          "position": 4,
+          "code": "RUS",
+          "gap_ahead": 2.6,
+          "tyre": { "compound": "HARD", "age": 21 }
+        },
+        {
+          "position": 5,
+          "code": "HAM",
+          "gap_ahead": 0.6,
+          "tyre": { "compound": "MEDIUM", "age": 13 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 3.9,
+          "tyre": { "compound": "MEDIUM", "age": 17 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "SOFT", "age": 5 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 4.4,
+          "tyre": { "compound": "HARD", "age": 27 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 1.1,
+          "tyre": { "compound": "HARD", "age": 29 }
+        }
+      ],
+      "events": [
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    },
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 23,
+      "total_laps": 57,
+      "track_status": "GREEN",
+      "battles": [
+        {
+          "battle_id": "b-001",
+          "prediction_time": "2024-03-02T15:42:10Z",
+          "lap": 23,
+          "attacker_code": "HAM",
+          "defender_code": "RUS",
+          "attacker_position": 5,
+          "gap": 0.4,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 14 },
+          "defender_tyre": { "compound": "HARD", "age": 22 },
+          "probability": 0.78
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:42:10Z",
+          "lap": 23,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.7,
+          "attacker_tyre": { "compound": "SOFT", "age": 6 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 18 },
+          "probability": 0.54
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:42:10Z",
+          "lap": 23,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 0.9,
+          "attacker_tyre": { "compound": "HARD", "age": 30 },
+          "defender_tyre": { "compound": "HARD", "age": 28 },
+          "probability": 0.31
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:42:10Z",
+          "lap": 23,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 1.6,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 2 },
+          "defender_tyre": { "compound": "HARD", "age": 25 },
+          "probability": null
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 20 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 3.1,
+          "tyre": { "compound": "HARD", "age": 25 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 1.6,
+          "tyre": { "compound": "MEDIUM", "age": 2 }
+        },
+        {
+          "position": 4,
+          "code": "RUS",
+          "gap_ahead": 2.4,
+          "tyre": { "compound": "HARD", "age": 22 }
+        },
+        {
+          "position": 5,
+          "code": "HAM",
+          "gap_ahead": 0.4,
+          "tyre": { "compound": "MEDIUM", "age": 14 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 3.8,
+          "tyre": { "compound": "MEDIUM", "age": 18 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.7,
+          "tyre": { "compound": "SOFT", "age": 6 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 4.5,
+          "tyre": { "compound": "HARD", "age": 28 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "HARD", "age": 30 }
+        }
+      ],
+      "events": [
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    },
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 24,
+      "total_laps": 57,
+      "track_status": "GREEN",
+      "battles": [
+        {
+          "battle_id": "b-001",
+          "prediction_time": "2024-03-02T15:43:50Z",
+          "lap": 24,
+          "attacker_code": "HAM",
+          "defender_code": "RUS",
+          "attacker_position": 5,
+          "gap": 0.3,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 15 },
+          "defender_tyre": { "compound": "HARD", "age": 23 },
+          "probability": 0.85
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:43:50Z",
+          "lap": 24,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.8,
+          "attacker_tyre": { "compound": "SOFT", "age": 7 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 19 },
+          "probability": 0.49
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:43:50Z",
+          "lap": 24,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 1.2,
+          "attacker_tyre": { "compound": "HARD", "age": 31 },
+          "defender_tyre": { "compound": "HARD", "age": 29 },
+          "probability": 0.22
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:43:50Z",
+          "lap": 24,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 1.2,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 3 },
+          "defender_tyre": { "compound": "HARD", "age": 26 },
+          "probability": 0.18
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 21 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 3.2,
+          "tyre": { "compound": "HARD", "age": 26 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 1.2,
+          "tyre": { "compound": "MEDIUM", "age": 3 }
+        },
+        {
+          "position": 4,
+          "code": "RUS",
+          "gap_ahead": 2.3,
+          "tyre": { "compound": "HARD", "age": 23 }
+        },
+        {
+          "position": 5,
+          "code": "HAM",
+          "gap_ahead": 0.3,
+          "tyre": { "compound": "MEDIUM", "age": 15 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 3.7,
+          "tyre": { "compound": "MEDIUM", "age": 19 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.8,
+          "tyre": { "compound": "SOFT", "age": 7 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 4.6,
+          "tyre": { "compound": "HARD", "age": 29 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 1.2,
+          "tyre": { "compound": "HARD", "age": 31 }
+        }
+      ],
+      "events": [
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    },
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 25,
+      "total_laps": 57,
+      "track_status": "GREEN",
+      "battles": [
+        {
+          "battle_id": "b-005",
+          "prediction_time": "2024-03-02T15:45:30Z",
+          "lap": 25,
+          "attacker_code": "RUS",
+          "defender_code": "HAM",
+          "attacker_position": 5,
+          "gap": 0.5,
+          "attacker_tyre": { "compound": "HARD", "age": 24 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 16 },
+          "probability": 0.24
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:45:30Z",
+          "lap": 25,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.6,
+          "attacker_tyre": { "compound": "SOFT", "age": 8 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 20 },
+          "probability": 0.61
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:45:30Z",
+          "lap": 25,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 1.4,
+          "attacker_tyre": { "compound": "HARD", "age": 32 },
+          "defender_tyre": { "compound": "HARD", "age": 30 },
+          "probability": 0.17
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:45:30Z",
+          "lap": 25,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 1.0,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 4 },
+          "defender_tyre": { "compound": "HARD", "age": 27 },
+          "probability": 0.25
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 22 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 3.3,
+          "tyre": { "compound": "HARD", "age": 27 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 1.0,
+          "tyre": { "compound": "MEDIUM", "age": 4 }
+        },
+        {
+          "position": 4,
+          "code": "HAM",
+          "gap_ahead": 2.0,
+          "tyre": { "compound": "MEDIUM", "age": 16 }
+        },
+        {
+          "position": 5,
+          "code": "RUS",
+          "gap_ahead": 0.5,
+          "tyre": { "compound": "HARD", "age": 24 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 3.6,
+          "tyre": { "compound": "MEDIUM", "age": 20 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.6,
+          "tyre": { "compound": "SOFT", "age": 8 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 4.8,
+          "tyre": { "compound": "HARD", "age": 30 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 1.4,
+          "tyre": { "compound": "HARD", "age": 32 }
+        }
+      ],
+      "events": [
+        { "lap": 25, "message": "HAM → RUS 추월 성공 (직전 예측 85%)" },
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    },
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 26,
+      "total_laps": 57,
+      "track_status": "SC",
+      "battles": [
+        {
+          "battle_id": "b-005",
+          "prediction_time": "2024-03-02T15:47:20Z",
+          "lap": 26,
+          "attacker_code": "RUS",
+          "defender_code": "HAM",
+          "attacker_position": 5,
+          "gap": 0.8,
+          "attacker_tyre": { "compound": "HARD", "age": 25 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 17 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:47:20Z",
+          "lap": 26,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.9,
+          "attacker_tyre": { "compound": "SOFT", "age": 9 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 21 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:47:20Z",
+          "lap": 26,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 1.0,
+          "attacker_tyre": { "compound": "HARD", "age": 33 },
+          "defender_tyre": { "compound": "HARD", "age": 31 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:47:20Z",
+          "lap": 26,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 0.9,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 5 },
+          "defender_tyre": { "compound": "HARD", "age": 28 },
+          "probability": null
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 23 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 1.5,
+          "tyre": { "compound": "HARD", "age": 28 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "MEDIUM", "age": 5 }
+        },
+        {
+          "position": 4,
+          "code": "HAM",
+          "gap_ahead": 1.2,
+          "tyre": { "compound": "MEDIUM", "age": 17 }
+        },
+        {
+          "position": 5,
+          "code": "RUS",
+          "gap_ahead": 0.8,
+          "tyre": { "compound": "HARD", "age": 25 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 1.3,
+          "tyre": { "compound": "MEDIUM", "age": 21 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "SOFT", "age": 9 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 1.4,
+          "tyre": { "compound": "HARD", "age": 31 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 1.0,
+          "tyre": { "compound": "HARD", "age": 33 }
+        }
+      ],
+      "events": [
+        { "lap": 26, "message": "Safety Car 투입, 예측 일시 중지" },
+        { "lap": 25, "message": "HAM → RUS 추월 성공 (직전 예측 85%)" },
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    },
+    {
+      "race_name": "2024 바레인 GP",
+      "lap": 27,
+      "total_laps": 57,
+      "track_status": "SC",
+      "battles": [
+        {
+          "battle_id": "b-005",
+          "prediction_time": "2024-03-02T15:49:40Z",
+          "lap": 27,
+          "attacker_code": "RUS",
+          "defender_code": "HAM",
+          "attacker_position": 5,
+          "gap": 0.7,
+          "attacker_tyre": { "compound": "HARD", "age": 26 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 18 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-002",
+          "prediction_time": "2024-03-02T15:49:40Z",
+          "lap": 27,
+          "attacker_code": "LEC",
+          "defender_code": "SAI",
+          "attacker_position": 7,
+          "gap": 0.6,
+          "attacker_tyre": { "compound": "SOFT", "age": 10 },
+          "defender_tyre": { "compound": "MEDIUM", "age": 22 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-003",
+          "prediction_time": "2024-03-02T15:49:40Z",
+          "lap": 27,
+          "attacker_code": "ALO",
+          "defender_code": "STR",
+          "attacker_position": 9,
+          "gap": 0.8,
+          "attacker_tyre": { "compound": "HARD", "age": 34 },
+          "defender_tyre": { "compound": "HARD", "age": 32 },
+          "probability": null
+        },
+        {
+          "battle_id": "b-004",
+          "prediction_time": "2024-03-02T15:49:40Z",
+          "lap": 27,
+          "attacker_code": "PIA",
+          "defender_code": "NOR",
+          "attacker_position": 3,
+          "gap": 0.7,
+          "attacker_tyre": { "compound": "MEDIUM", "age": 6 },
+          "defender_tyre": { "compound": "HARD", "age": 29 },
+          "probability": null
+        }
+      ],
+      "standings": [
+        {
+          "position": 1,
+          "code": "VER",
+          "gap_ahead": null,
+          "tyre": { "compound": "HARD", "age": 24 }
+        },
+        {
+          "position": 2,
+          "code": "NOR",
+          "gap_ahead": 1.1,
+          "tyre": { "compound": "HARD", "age": 29 }
+        },
+        {
+          "position": 3,
+          "code": "PIA",
+          "gap_ahead": 0.7,
+          "tyre": { "compound": "MEDIUM", "age": 6 }
+        },
+        {
+          "position": 4,
+          "code": "HAM",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "MEDIUM", "age": 18 }
+        },
+        {
+          "position": 5,
+          "code": "RUS",
+          "gap_ahead": 0.7,
+          "tyre": { "compound": "HARD", "age": 26 }
+        },
+        {
+          "position": 6,
+          "code": "SAI",
+          "gap_ahead": 1.0,
+          "tyre": { "compound": "MEDIUM", "age": 22 }
+        },
+        {
+          "position": 7,
+          "code": "LEC",
+          "gap_ahead": 0.6,
+          "tyre": { "compound": "SOFT", "age": 10 }
+        },
+        {
+          "position": 8,
+          "code": "STR",
+          "gap_ahead": 0.9,
+          "tyre": { "compound": "HARD", "age": 32 }
+        },
+        {
+          "position": 9,
+          "code": "ALO",
+          "gap_ahead": 0.8,
+          "tyre": { "compound": "HARD", "age": 34 }
+        }
+      ],
+      "events": [
+        { "lap": 26, "message": "Safety Car 투입, 예측 일시 중지" },
+        { "lap": 25, "message": "HAM → RUS 추월 성공 (직전 예측 85%)" },
+        { "lap": 19, "message": "SC 종료, 예측 재개" }
+      ]
+    }
+  ]
+}

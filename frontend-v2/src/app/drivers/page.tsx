@@ -39,24 +39,33 @@ export default function DriversPage() {
 
   return (
     <div>
-      <h1>드라이버 목록</h1>
-      <SearchBox value={search} onChange={setSearch} />
-      <TeamFilter
-        teams={teams}
-        selectedTeam={selectedTeam}
-        onSelect={setSelectedTeam}
-      />
+      <div className="page-head">
+        <h1 className="page-title">드라이버</h1>
+        {!loading && !error && (
+          <span className="page-count">{visibleDrivers.length}명</span>
+        )}
+      </div>
+      <div className="tools">
+        <SearchBox value={search} onChange={setSearch} />
+        <TeamFilter
+          teams={teams}
+          selectedTeam={selectedTeam}
+          onSelect={setSelectedTeam}
+        />
+      </div>
 
-      {loading && <p>불러오는 중...</p>}
+      {loading && <p className="state-note">불러오는 중...</p>}
       {error && <p className="error">{error}</p>}
       {!loading && !error && visibleDrivers.length === 0 && (
-        <p>검색 결과가 없어요.</p>
+        <p className="state-note">
+          조건에 맞는 드라이버가 없어요. 검색어나 팀을 바꿔 보세요.
+        </p>
       )}
-      {!loading && !error && (
-        <div className="row">
+      {!loading && !error && visibleDrivers.length > 0 && (
+        <div className="driver-list">
           {visibleDrivers.map((d) => (
             <Link key={d.id} href={`/drivers/${d.id}`} className="card-link">
-              <Card name={d.name} team={d.team} number={d.number} />
+              <Card name={d.name} team={d.team} number={d.number} code={d.code} />
             </Link>
           ))}
         </div>

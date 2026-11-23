@@ -51,3 +51,9 @@ export type LiveEvent = {
   message: string;
 };
 
+// 리플레이 데이터: 장면(LiveState)을 시간 순서대로 모은 것
+export type ReplayData = {
+  race_name: string;
+  frames: LiveState[];
+};
+
