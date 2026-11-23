@@ -1,0 +1,23 @@
+[
+  {
+    "id": "2024-bahrain",
+    "race_name": "2024 바레인 GP",
+    "laps": "22~27랩",
+    "summary": "HAM이 RUS를 3랩 동안 추격해 25랩에 추월, 이후 세이프티카",
+    "available": true
+  },
+  {
+    "id": "2024-saudi",
+    "race_name": "2024 사우디아라비아 GP",
+    "laps": "-",
+    "summary": "백엔드 연동 후 제공 예정",
+    "available": false
+  },
+  {
+    "id": "2024-australia",
+    "race_name": "2024 호주 GP",
+    "laps": "-",
+    "summary": "백엔드 연동 후 제공 예정",
+    "available": false
+  }
+]

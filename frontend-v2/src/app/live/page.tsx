@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import Link from "next/link";
 import LiveHeader from "@/components/LiveHeader";
 import BattleCard from "@/components/BattleCard";
 import StandingsTable from "@/components/StandingsTable";
@@ -10,19 +11,29 @@ import BattleDetail from "@/components/BattleDetail";
 import { getReplay } from "@/lib/api";
 import type { ReplayData } from "@/types";
 
-export default function LivePage() {
+export default function LivePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ race?: string }>;
+}) {
+  // 주소의 ?race=... 값 (없으면 기본 경기)
+  const { race = "2024-bahrain" } = use(searchParams);
+
   const [replay, setReplay] = useState<ReplayData | null>(null);
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [missing, setMissing] = useState(false); // 재생할 수 없는 경기
 
   // 데이터 불러오기 (처음 한 번)
   useEffect(() => {
     async function load() {
-      setReplay(await getReplay());
+      const data = await getReplay(race);
+      if (data) setReplay(data);
+      else setMissing(true);
     }
     load();
-  }, []);
+  }, [race]);
 
   // 재생 중이면 3초마다 다음 장면으로
   useEffect(() => {
@@ -41,6 +52,15 @@ export default function LivePage() {
 
     return () => clearInterval(id);
   }, [playing, replay]);
+
+  if (missing) {
+    return (
+      <div className="state-block">
+        <p className="state-note">이 경기는 아직 리플레이를 준비하지 않았어요.</p>
+        <Link href="/" className="btn btn-quiet">경기 다시 고르기</Link>
+      </div>
+    );
+  }
 
   if (!replay) {
     return <p className="state-note">불러오는 중...</p>;
@@ -103,6 +123,10 @@ export default function LivePage() {
 
   return (
     <div className="live">
+      <p className="mode-tag">
+        <span className="mode-dot" aria-hidden="true" />
+        리플레이 · 저장된 경기 기록을 실시간처럼 재생해요
+      </p>
       <LiveHeader liveState={state} />
       <div className="live-grid">
         <section aria-labelledby="battles-title">
