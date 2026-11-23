@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, IBM_Plex_Sans_KR } from "next/font/google";
 import Link from "next/link";
 import NavLinks from "@/components/NavLinks";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 // 숫자·드라이버 코드용 (한글 없음)
@@ -20,8 +21,15 @@ const body = IBM_Plex_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "F1 GG",
-  description: "F1 드라이버 정보 서비스",
+  title: "RaceIQ Overtake",
+  description: "F1 중계 옆에 띄워 두는 3랩 내 추월 확률 세컨드 스크린",
+  applicationName: "RaceIQ Overtake",
+  // 아이폰 사파리에서 "홈 화면에 추가"했을 때 앱처럼 열리게
+  appleWebApp: {
+    capable: true,
+    title: "RaceIQ",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
@@ -34,11 +42,12 @@ export default function RootLayout({children,}: Readonly<{ children: React.React
       <body>
         <header className="site-header">
           <div className="site-header-inner">
-            <Link href="/" className="wordmark">F1 GG</Link>
+            <Link href="/" className="wordmark">RaceIQ</Link>
             <NavLinks />
           </div>
         </header>
         <main className="content">{children}</main>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
