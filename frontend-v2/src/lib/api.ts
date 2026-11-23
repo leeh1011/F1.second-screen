@@ -1,7 +1,8 @@
-import type { Driver,LiveState,ReplayData } from "@/types";
+import type { Driver, LiveState, ReplayData, ReplaySummary } from "@/types";
 import mockDrivers from "../../public/drivers.json";
 import mockLive from "../../public/mock/live.json";
-import mockReplay from "../../public/mock/replay.json"
+import mockReplay from "../../public/mock/replay.json";
+import mockReplayList from "../../public/mock/replays.json";
 
 
 // 백엔드 주소. 설정하지 않으면 mock 데이터를 사용한다.
@@ -30,6 +31,13 @@ export async function getLiveState():Promise<LiveState>{
   return mockLive as LiveState;
 }
 
-export async function getReplay():Promise<ReplayData>{
-  return mockReplay as ReplayData;
+// 리플레이 경기 목록 (지금은 mock, 백엔드의 배틀 후보 목록 API가 나오면 교체)
+export async function getReplayList(): Promise<ReplaySummary[]> {
+  return mockReplayList as ReplaySummary[];
+}
+
+// 리플레이 데이터: 경기 id로 찾는다. 재생할 수 없는 경기면 null
+export async function getReplay(raceId = "2024-bahrain"): Promise<ReplayData | null> {
+  if (raceId === "2024-bahrain") return mockReplay as ReplayData;
+  return null;
 }

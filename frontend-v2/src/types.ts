@@ -57,3 +57,11 @@ export type ReplayData = {
   frames: LiveState[];
 };
 
+// 시작 화면에 보여 줄 리플레이 경기 목록의 한 줄
+export type ReplaySummary = {
+  id: string;          // 주소에 쓰는 경기 id (예: 2024-bahrain)
+  race_name: string;
+  laps: string;        // 재생 구간 (예: 22~27랩)
+  summary: string;     // 한 줄 설명
+  available: boolean;  // 지금 재생할 수 있는지
+};
