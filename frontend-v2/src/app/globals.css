@@ -1,291 +1,977 @@
+/* ==========================================================================
+   F1 GG — 세컨드 스크린 디자인
+   바탕은 아스팔트 같은 청회색, 색은 F1 화면에 실제로 쓰이는 것만 사용한다.
+   - 보라(--timing): 타이밍 화면의 최고 기록 색 → 추월 확률·강조
+   - 타이어 색: 소프트 빨강 / 미디엄 노랑 / 하드 흰색
+   - 깃발 색: 트랙 상태
+   ========================================================================== */
+
+:root {
+  --tarmac: #20252b;
+  --pitwall: #2a3139;
+  --gantry: #343d46;
+  --line: #3a444e;
+  --ink: #eef1f3;
+  --sidewall: #9aa5b0;
+
+  --timing: #c46bf2;
+  --timing-fill: #a84fdb;
+  --timing-wash: rgba(196, 107, 242, 0.14);
+
+  --flag-green: #41d17c;
+  --flag-yellow: #ffd23f;
+  --flag-sc: #ff9f1c;
+
+  --tyre-soft: #ff4d4d;
+  --tyre-medium: #ffd23f;
+  --tyre-hard: #f2f2f2;
+
+  --radius: 4px;
+  --display: var(--font-display), "Arial Narrow", sans-serif;
+  --body: var(--font-body), system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  background: #111;
-  color: white;
-  font-family: sans-serif;
+  background: var(--tarmac);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
-.header {
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--timing);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------- 공통 틀 ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--tarmac);
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header-inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #333;
+  justify-content: space-between;
+  max-width: 1120px;
+  height: 52px;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-.header a {
-  color: white;
+.wordmark {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   text-decoration: none;
 }
 
-.header nav {
+.nav {
   display: flex;
-  gap: 16px;
+  align-self: stretch;
 }
 
-.header nav a:hover {
-  color: #e10600;
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--sidewall);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--ink);
+}
+
+.nav-link[aria-current="page"] {
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--timing);
 }
 
 .content {
-  padding: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
 }
-/* ---------- 드라이버 목록 화면 ---------- */
-.row {
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.state-note {
+  color: var(--sidewall);
+  padding: 24px 0;
+}
+
+.error {
+  color: #ff8a80;
+  padding: 24px 0;
+}
+
+/* ---------- 홈 ---------- */
+.hero {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+  padding: 24px 0 8px;
+}
+
+.hero-title {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+
+.hero-desc {
+  max-width: 32em;
+  margin-top: 16px;
+  color: var(--sidewall);
+  font-size: 16px;
+}
+
+.hero-actions {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
 }
 
-.card {
-  background: #1e1e1e;
-  padding: 16px;
-  border-radius: 8px;
+.hero-sample-note {
+  margin-top: 10px;
+  color: var(--sidewall);
+  font-size: 13px;
 }
 
-.card:hover {
-  background-color: #2a2a2a;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.number {
-  font-size: 32px;
-  font-weight: bold;
-  color: #e10600;
+.btn-primary {
+  background: var(--timing);
+  color: var(--tarmac);
 }
 
-.filters {
+.btn-primary:hover {
+  background: #d58af7;
+}
+
+.btn-quiet {
+  border: 1px solid var(--line);
+}
+
+.btn-quiet:hover {
+  background: var(--pitwall);
+}
+
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+    gap: 56px;
+    padding-top: 48px;
+  }
+}
+
+/* ---------- 라이브: 레이스 정보 ---------- */
+.race-strip {
+  padding: 4px 0 20px;
+}
+
+.race-top {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.filters button {
-  padding: 6px 14px;
-  border: 1px solid #444;
-  border-radius: 6px;
-  background: #1e1e1e;
-  color: white;
+.race-name {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flag::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.flag-green {
+  color: var(--flag-green);
+}
+
+.flag-yellow {
+  color: var(--flag-yellow);
+}
+
+.flag-sc,
+.flag-vsc {
+  color: var(--flag-sc);
+}
+
+.lap-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.lap-now {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.lap-total {
+  color: var(--sidewall);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.lap-bar {
+  flex: 1;
+  height: 4px;
+  align-self: center;
+  border-radius: 2px;
+  background: var(--gantry);
+  overflow: hidden;
+}
+
+.lap-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.6s ease-out;
+}
+
+/* ---------- 라이브: 배치 ---------- */
+.live-grid {
+  display: grid;
+  gap: 32px;
+}
+
+.live-side {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (min-width: 900px) {
+  .live-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+}
+
+/* ---------- 라이브: 배틀 ---------- */
+.battle-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.battle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.battle-list > .battle:first-child {
+  border-top: 0;
+}
+
+.battle-featured {
+  grid-template-columns: minmax(0, 1fr) 132px;
+  padding: 20px 16px;
+  background: var(--pitwall);
+  border-top: 0;
+  border-left: 3px solid var(--timing);
+  margin-bottom: 4px;
+}
+
+.battle-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.battle-who {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.who-def {
+  align-items: flex-end;
+}
+
+.who-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sidewall);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.role-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.role-dot-att {
+  background: var(--timing);
+}
+
+.role-dot-def {
+  border: 2px solid var(--ink);
+}
+
+.who-code {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.battle-featured .who-code {
+  font-size: 36px;
+}
+
+/* 간격 레인: 추격차(왼쪽 고정)에서 앞차까지의 거리를 초 단위로 그린다 */
+.lane {
+  position: relative;
+  height: 44px;
+  margin: 0 8px;
+}
+
+.lane-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12px;
+  height: 2px;
+  background: var(--line);
+}
+
+.lane-zone {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  height: 18px;
+  background: var(--timing-wash);
+  border-right: 1px dashed var(--timing);
+}
+
+.lane-link {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  height: 2px;
+  background: var(--sidewall);
+  transition: width 0.6s ease-out;
+}
+
+.lane-link-near {
+  background: var(--timing);
+}
+
+.lane-car {
+  position: absolute;
+  top: 13px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.lane-car-att {
+  left: 0;
+  background: var(--timing);
+}
+
+.lane-car-def {
+  border: 2px solid var(--ink);
+  background: var(--tarmac);
+  transition: left 0.6s ease-out;
+}
+
+.lane-tick,
+.lane-gap {
+  position: absolute;
+  top: 26px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.lane-tick {
+  color: var(--sidewall);
+  transform: translateX(-50%);
+}
+
+.lane-gap {
+  right: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.battle-prob {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding-left: 16px;
+  border-left: 1px solid var(--line);
+}
+
+.prob-value {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.battle-featured .prob-value {
+  font-size: 64px;
+}
+
+.prob-unit {
+  margin-left: 2px;
+  font-size: 0.45em;
+  font-weight: 700;
+}
+
+.prob-meter {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--gantry);
+  overflow: hidden;
+}
+
+.prob-meter > i {
+  display: block;
+  height: 100%;
+  background: var(--timing-fill);
+  transition: width 0.6s ease-out;
+}
+
+.prob-label {
+  color: var(--sidewall);
+  font-size: 12px;
+  text-align: right;
+}
+
+.prob-delta {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.prob-delta-up {
+  color: var(--timing);
+}
+
+.prob-delta-down {
+  color: var(--sidewall);
+}
+
+.prob-na {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sidewall);
+}
+
+/* ---------- 타이어 ---------- */
+.tyre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sidewall);
+  font-variant-numeric: tabular-nums;
+}
+
+.tyre-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tyre-soft {
+  color: var(--tyre-soft);
+}
+
+.tyre-medium {
+  color: var(--tyre-medium);
+}
+
+.tyre-hard {
+  color: var(--tyre-hard);
+}
+
+/* ---------- 라이브: 순위 / 이벤트 ---------- */
+.tower {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tower th {
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--sidewall);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.tower td {
+  height: 38px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--gantry);
+}
+
+.tower-num {
+  text-align: right;
+}
+
+.tower-pos {
+  width: 40px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--sidewall);
+}
+
+.tower-code {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.tower-gap {
+  color: var(--sidewall);
+}
+
+.tower-row-battle {
+  background: var(--timing-wash);
+}
+
+.tower-row-battle .tower-pos {
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--timing);
+}
+
+.events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.event {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gantry);
+  font-size: 14px;
+}
+
+.event-lap {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--timing);
+}
+
+.event-empty {
+  color: var(--sidewall);
+  font-size: 14px;
+}
+
+/* ---------- 리플레이 컨트롤 (화면 아래에 붙음) ---------- */
+.replay {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  background: var(--tarmac);
+  border-top: 1px solid var(--line);
+}
+
+.replay-play {
+  min-width: 96px;
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--timing);
+  color: var(--tarmac);
+  font-weight: 700;
   cursor: pointer;
 }
 
-.filters button:hover {
-  background-color: #e10600;
+.replay-play:disabled {
+  background: var(--gantry);
+  color: var(--sidewall);
+  cursor: not-allowed;
 }
 
-.filters button.active {
-  background: #e10600;
-  border-color: #e10600;
-  font-weight: bold;
+.replay-steps {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+.replay-step {
+  flex: 1;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--gantry);
+}
+
+.replay-step-on {
+  background: var(--ink);
+}
+
+.replay-count {
+  min-width: 44px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-reset {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+}
+
+.replay-reset:hover {
+  background: var(--pitwall);
+}
+
+/* ---------- 드라이버 목록 ---------- */
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.page-count {
+  color: var(--sidewall);
+  font-size: 14px;
+}
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 720px) {
+  .tools {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .search-box {
   position: relative;
-  display: inline-block;
-  margin-bottom: 12px;
+  display: block;
+  min-width: 240px;
 }
 
 .search {
-  padding: 8px 32px 8px 12px;
-  border: 1px solid #444;
-  border-radius: 6px;
-  background: #1e1e1e;
-  color: white;
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.search::placeholder {
+  color: var(--sidewall);
 }
 
 .clear {
   position: absolute;
-  right: 8px;
-  top: 40%;
+  right: 0;
+  top: 50%;
   transform: translateY(-50%);
-  border: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
   background: transparent;
-  color: #aaa;
-  font-size: 18px;
+  color: var(--sidewall);
+  font-size: 20px;
   cursor: pointer;
 }
 
 .clear:hover {
-  color: white;
+  color: var(--ink);
 }
 
-.error {
-  color: #ff6b6b;
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-/* ---------- 카드 링크 / 상세 페이지 ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--pitwall);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--tarmac);
+  font-weight: 600;
+}
+
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--team);
+}
+
+.driver-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
 .card-link {
+  display: block;
+  border-bottom: 1px solid var(--line);
   color: inherit;
   text-decoration: none;
 }
 
+.card-link:hover {
+  background: var(--pitwall);
+}
+
+.driver-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 8px;
+}
+
+.driver-number {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--team);
+  font-variant-numeric: tabular-nums;
+}
+
+.driver-name {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.driver-team {
+  color: var(--sidewall);
+  font-size: 14px;
+}
+
+.driver-code {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--sidewall);
+}
+
+/* ---------- 드라이버 상세 ---------- */
 .back-link {
   display: inline-block;
-  margin-bottom: 16px;
-  color: #aaa;
+  margin-bottom: 24px;
+  color: var(--sidewall);
   text-decoration: none;
 }
 
 .back-link:hover {
-  color: white;
+  color: var(--ink);
 }
 
-.detail-card {
-  background: #1e1e1e;
-  padding: 24px;
-  border-radius: 8px;
-  max-width: 400px;
+.driver-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 16px 32px;
+  padding: 8px 0 28px;
+  border-bottom: 1px solid var(--line);
 }
 
-.detail-card h1 {
-  margin: 8px 0;
+.driver-hero-number {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(120px, 28vw, 220px);
+  line-height: 0.8;
+  color: var(--team);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ---------- 홈 화면 ---------- */
-.hero {
-  max-width: 640px;
-  padding: 48px 0;
+.driver-hero-name {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-.hero-label {
-  color: #e10600;
-  font-weight: bold;
-  margin: 0;
+.driver-hero-meta {
+  margin-top: 8px;
+  color: var(--sidewall);
 }
-
-.hero h1 {
-  font-size: 36px;
-  margin: 8px 0 16px;
-}
-
-.hero-desc {
-  color: #ccc;
-  line-height: 1.6;
-  margin-bottom: 24px;
-}
-
-.hero-button {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 6px;
-  background: #e10600;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.hero-button:hover {
-  background: #b80500;
-}
-
-.live-header{
-  display: flex;
-  justify-content: space-between;
-  background:#1e1e1e;
-  border-radius: 6px;
-  padding: 12px 16px;
-  align-items: center;
-}
-
-.live-header-info {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.live-header-status {
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  font-weight: bold;
-}
-
-.status-green{
-  color:green;
-}
-
-.status-sc{
-  color:yellow;
-}
-
-.status-vsc{
-  color:yellow;
-}
-
-.status-yellow{
-  color:yellowgreen;
-}
-
-.battle-list {
-  display: flex;
-  flex-direction: column;   /* 카드를 세로로 쌓기 */
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.battle-card {
-  display: flex;
-  justify-content: space-between;  /* 왼쪽 정보 ↔ 오른쪽 확률 */
-  align-items: center;
-  background: #1e1e1e;
-  border-radius: 8px;
-  padding: 14px 16px;
-}
-
-.battle-card p { margin: 4px 0; }
-
-.battle-drivers { font-size: 18px; font-weight: bold; }
-.arrow { color: #e10600; }
-
-.battle-tyres { display: flex; gap: 8px; }
-.tyre {
-  font-size: 12px;
-  padding: 2px 8px;
-  border: 1px solid #444;
-  border-radius: 999px;
-}
-
-.battle-gap { color: #aaa; font-size: 13px; }
-
-.battle-prob {
-  display: flex;
-  flex-direction: column;   /* 숫자와 설명을 위아래로 */
-  align-items: flex-end;
-}
-.prob { font-size: 32px; font-weight: bold; color: #e10600; }
-.prob-na { font-size: 16px; color: #888; }
-.prob-label { font-size: 11px; color: #888; }
-
-.standings {
-  width: 100%;
-  border-collapse: collapse;   /* 칸 사이 이중 테두리 없애기 */
-  background: #1e1e1e;
-  border-radius: 8px;
-}
-.standings th {
-  text-align: left;
-  color: #888;
-  font-size: 12px;
-  padding: 8px 10px;
-  border-bottom: 1px solid #333;
-}
-.standings td {
-  padding: 6px 10px;
-  border-bottom: 1px solid #2a2a2a;
-}
-.driver-code { font-weight: bold; }
-.in-battle { background: rgba(225, 6, 0, 0.15); }
-
-.event-feed {
-  list-style: none;            /* 앞에 점 없애기 */
-  padding: 0;
-  margin: 0;
-}
-.event-feed li {
-  display: flex;
-  gap: 12px;
-  padding: 6px 0;
-  font-size: 13px;
-  color: #ccc;
-}
-.event-lap { color: #e10600; font-weight: bold; }
-.event-empty { color: #888; font-size: 13px; }
