@@ -5,12 +5,13 @@ type BattleCardProps = {
   battle: Battle;
   prevProbability: number | null;
   featured?: boolean; // 가장 확률이 높은 배틀은 크게 보여 준다
+  onSelect?: () => void; // "자세히"를 눌렀을 때 (없으면 버튼을 숨김)
 };
 
 const LANE_SECONDS = 2.5; // 레인 전체가 나타내는 간격(초)
 const NEAR_SECONDS = 1.0; // 추월 기회로 보는 간격(초)
 
-function BattleCard({ battle, prevProbability, featured = false }: BattleCardProps) {
+function BattleCard({ battle, prevProbability, featured = false, onSelect }: BattleCardProps) {
   const {
     attacker_code, defender_code, attacker_position,
     gap, attacker_tyre, defender_tyre, probability,
@@ -93,6 +94,11 @@ function BattleCard({ battle, prevProbability, featured = false }: BattleCardPro
               </span>
             )}
           </>
+        )}
+        {onSelect && (
+          <button type="button" className="battle-open" onClick={onSelect}>
+            자세히
+          </button>
         )}
       </div>
     </article>

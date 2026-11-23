@@ -6,16 +6,18 @@ import BattleCard from "@/components/BattleCard";
 import StandingsTable from "@/components/StandingsTable";
 import EventFeed from "@/components/EventFeed";
 import ReplayControls from "@/components/ReplayControls";
+import BattleDetail from "@/components/BattleDetail";
 import { getReplay } from "@/lib/api";
 import type { ReplayData } from "@/types";
 
 export default function LivePage() {
-  const [replay, setReplay] = useState<ReplayData | null>(null);   // ①
+  const [replay, setReplay] = useState<ReplayData | null>(null);
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 데이터 불러오기 (처음 한 번)
-  useEffect(() => {                                                // ②
+  useEffect(() => {
     async function load() {
       setReplay(await getReplay());
     }
@@ -23,7 +25,7 @@ export default function LivePage() {
   }, []);
 
   // 재생 중이면 3초마다 다음 장면으로
-  useEffect(() => {                                                // ③
+  useEffect(() => {
     if (!playing || !replay) return;
 
     const lastIndex = replay.frames.length - 1;
@@ -37,14 +39,30 @@ export default function LivePage() {
       });
     }, 3000);
 
-    return () => clearInterval(id);                                // ④
+    return () => clearInterval(id);
   }, [playing, replay]);
 
   if (!replay) {
     return <p className="state-note">불러오는 중...</p>;
   }
 
-  const state = replay.frames[frameIndex];                         // ⑤
+  const state = replay.frames[frameIndex];
+
+  // 지금 장면까지, 선택된 배틀의 랩별 확률·간격 기록 (아직 재생되지 않은 장면은 제외)
+  const history = selectedId
+    ? replay.frames.slice(0, frameIndex + 1).flatMap((frame) =>
+        frame.battles
+          .filter((b) => b.battle_id === selectedId)
+          .map((b) => ({
+            lap: frame.lap,
+            probability: b.probability === null ? null : Math.round(b.probability * 100),
+            gap: b.gap,
+          }))
+      )
+    : [];
+
+  // 지금 장면에서 선택된 배틀 (추월 등으로 끝났으면 undefined)
+  const selectedBattle = state.battles.find((b) => b.battle_id === selectedId);
 
   const prevState = frameIndex > 0 ? replay.frames[frameIndex - 1] : null;
 
@@ -76,6 +94,7 @@ export default function LivePage() {
                   battle={b}
                   prevProbability={prevProbability(b.battle_id)}
                   featured={i === 0}
+                  onSelect={() => setSelectedId(b.battle_id)}
                 />
               ))}
             </div>
@@ -92,7 +111,7 @@ export default function LivePage() {
           </section>
         </div>
       </div>
-      <ReplayControls                                              // ⑥
+      <ReplayControls
         playing={playing}
         frameIndex={frameIndex}
         totalFrames={replay.frames.length}
@@ -102,6 +121,14 @@ export default function LivePage() {
           setFrameIndex(0);
         }}
       />
+      {selectedId && (
+        <BattleDetail
+          battleId={selectedId}
+          battle={selectedBattle}
+          history={history}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </div>
   );
 }
