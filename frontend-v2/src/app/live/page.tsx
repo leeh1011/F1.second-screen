@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LiveHeader from "@/components/LiveHeader";
 import BattleCard from "@/components/BattleCard";
@@ -8,6 +8,10 @@ import StandingsTable from "@/components/StandingsTable";
 import EventFeed from "@/components/EventFeed";
 import ReplayControls from "@/components/ReplayControls";
 import BattleDetail from "@/components/BattleDetail";
+import AlertSettings from "@/components/AlertSettings";
+import AlertToast from "@/components/AlertToast";
+import { computeAlerts } from "@/lib/alerts";
+import { requestNotificationPermission, showSystemNotification } from "@/lib/notify";
 import { getReplay } from "@/lib/api";
 import type { ReplayData } from "@/types";
 
@@ -24,6 +28,13 @@ export default function LivePage({
   const [playing, setPlaying] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [missing, setMissing] = useState(false); // 재생할 수 없는 경기
+
+  // 추월 알림
+  const [alertsOn, setAlertsOn] = useState(false);
+  const [threshold, setThreshold] = useState(0.75);       // 이 확률 이상이면 알림
+  const [permission, setPermission] =
+    useState<NotificationPermission | "unsupported">("default");
+  const sentKeys = useRef(new Set<string>());             // 이미 보낸 알림 (중복 방지)
 
   // 데이터 불러오기 (처음 한 번)
   useEffect(() => {
@@ -52,6 +63,31 @@ export default function LivePage({
 
     return () => clearInterval(id);
   }, [playing, replay]);
+
+  // 장면이 바뀔 때마다 알릴 것이 있으면 시스템 알림 보내기
+  useEffect(() => {
+    if (frameIndex === 0) sentKeys.current.clear();       // 처음으로 돌아가면 다시 알릴 수 있게
+    if (!alertsOn || !replay) return;
+
+    const prev = frameIndex > 0 ? replay.frames[frameIndex - 1] : null;
+    const alerts = computeAlerts(prev, replay.frames[frameIndex], threshold);
+    for (const a of alerts) {
+      if (sentKeys.current.has(a.key)) continue;
+      sentKeys.current.add(a.key);
+      showSystemNotification(a.title, a.body, a.battleId ?? a.key);
+    }
+  }, [frameIndex, replay, alertsOn, threshold]);
+
+  // 알림 켜기/끄기 (켤 때 브라우저 권한을 물어봄)
+  async function toggleAlerts() {
+    if (alertsOn) {
+      setAlertsOn(false);
+      return;
+    }
+    const result = await requestNotificationPermission();
+    setPermission(result);
+    setAlertsOn(true); // 권한이 거부돼도 화면 안 알림은 동작
+  }
 
   if (missing) {
     return (
@@ -115,6 +151,9 @@ export default function LivePage({
     return prev?.probability ?? null;
   }
 
+  // 지금 장면에서 새로 생긴 알림 (화면 안 알림용)
+  const currentAlerts = alertsOn ? computeAlerts(prevState, state, threshold) : [];
+
   const top3 = state.battles
     .filter((b) => b.probability !== null)
     .sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0))
@@ -127,6 +166,14 @@ export default function LivePage({
         <span className="mode-dot" aria-hidden="true" />
         리플레이 · 저장된 경기 기록을 실시간처럼 재생해요
       </p>
+      <AlertSettings
+        enabled={alertsOn}
+        threshold={threshold}
+        permission={permission}
+        onToggle={toggleAlerts}
+        onThresholdChange={setThreshold}
+      />
+      <AlertToast alerts={currentAlerts} onSelect={(id) => setSelectedId(id)} />
       <LiveHeader liveState={state} />
       <div className="live-grid">
         <section aria-labelledby="battles-title">
