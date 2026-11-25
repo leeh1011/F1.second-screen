@@ -19,7 +19,13 @@ from app.pipeline.extract import (
 )
 
 
-LABEL_VERSION = 'v2-gap-evidence'
+LABEL_VERSION = 'v2-gap-evidence-negative-guard-v3'
+# Provisional policy: require two independent, consecutive comparable paired snapshots.
+NEGATIVE_CONFLICT_MIN_PAIRS = 2
+# Retrospective observation policy, independent of prediction input freshness
+# (extract.Config.max_update_seconds). Keep the existing value until a policy
+# is justified using training data and independent event evidence.
+LABEL_MAX_UPDATE_SECONDS = 10.0
 
 
 def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
@@ -45,11 +51,13 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
 
     positions, updates, passes = defaultdict(list), defaultdict(list), defaultdict(list)
     gap_values = defaultdict(dict)
+    interval_values = defaultdict(dict)
     for r in data['position']:
         positions[int(r['driver_number'])].append((timestamp(r['date']), int(r['position'])))
     for r in data['intervals']:
         driver, t = int(r['driver_number']), timestamp(r['date'])
         updates[driver].append(t)
+        interval_values[driver][t] = r.get('interval')
         value = r.get('gap_to_leader')
         # Strings such as '+1 LAP' and missing values are not numeric gaps.
         valid = (not isinstance(value, bool) and isinstance(value, (int, float))
@@ -88,7 +96,7 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
             if rank != 1:
                 if last is None:
                     return start
-                deadline = last + pd.Timedelta(seconds=config.max_update_seconds)
+                deadline = last + pd.Timedelta(seconds=LABEL_MAX_UPDATE_SECONDS)
                 if t > deadline:
                     return max(start, deadline)
             new_rank = position(driver, t)
@@ -214,6 +222,81 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
                 bad.append((missing, 'interval_coverage'))
         return min(bad) if bad else (None, None)
 
+    def negative_evidence_problem(a, d, start, stop):
+        """A negative requires coherent evidence throughout its full window.
+
+        A partial update with either numeric gap is usable. A non-leader
+        record with neither a usable interval nor gap-to-leader is ambiguous.
+        Repeated fresh same-lap gap ordering that contradicts rank is ambiguous, not
+        proof of either a pass or a negative. Confirmed positives use their
+        existing event/reversal/gap corroboration path within the same feed.
+        """
+        knots = {start}
+        for driver in (a, d):
+            for times_ in (updates.get(driver, []), pos_times.get(driver, []),
+                           laps.get(driver, {}).get('starts', [])):
+                knots.update(times_[bisect_right(times_, start):bisect_right(times_, stop)])
+        conflict_count, conflict_start = 0, None
+        previous_pair, previous_order = None, None
+        for t in sorted(knots):
+            latest = {}
+            for driver in (a, d):
+                ts = updates.get(driver, [])
+                i = bisect_right(ts, t) - 1
+                if i < 0:
+                    if position(driver, t) != 1:
+                        return t, 'negative_interval_missing'
+                    continue
+                when = ts[i]
+                latest[driver] = (when, gap_values[driver][when])
+                value = interval_values[driver][when]
+                interval_invalid = (
+                    isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not math.isfinite(value) or value < 0
+                )
+                if (position(driver, t) != 1 and interval_invalid
+                        and gap_values[driver][when] is None):
+                    return t, 'negative_interval_missing'
+            al, dl = lap_at(laps, a, t), lap_at(laps, d, t)
+            pa, pd_ = position(a, t), position(d, t)
+            order = None
+            if al is not None and dl is not None and pa is not None and pd_ is not None:
+                order = (al['number'], dl['number'], pa, pd_)
+            # A known rank/lap change starts a different comparison context,
+            # even when the latest gap records cannot be paired at this instant.
+            if order is not None and order != previous_order:
+                conflict_count, conflict_start = 0, None
+                previous_pair = None
+            if order is not None:
+                previous_order = order
+            if a not in latest or d not in latest:
+                continue
+            ta, ga = latest[a]
+            td, gd = latest[d]
+            comparable = (
+                ga is not None and gd is not None and ga != gd
+                and abs((ta - td).total_seconds()) <= gap_pair_skew_seconds
+                and (t - min(ta, td)).total_seconds() <= LABEL_MAX_UPDATE_SECONDS
+                and order is not None and order[0] == order[1] and pa != pd_
+            )
+            # Unpaired, tied or stale evidence does not resolve a contradiction.
+            # Only a comparable coherent ordering clears the pending run.
+            if not comparable:
+                continue
+            if (ga < gd) == (pa < pd_):
+                conflict_count, conflict_start = 0, None
+                previous_pair = None
+                continue
+            # Both drivers must advance beyond the last counted pair.
+            if previous_pair is None or (ta > previous_pair[0] and td > previous_pair[1]):
+                conflict_count += 1
+                previous_pair = (ta, td)
+                if conflict_start is None:
+                    conflict_start = t
+                if conflict_count >= NEGATIVE_CONFLICT_MIN_PAIRS:
+                    return conflict_start, 'negative_gap_position_conflict'
+        return None, None
+
     outputs = []
     for r in candidates.itertuples(index=False):
         start = timestamp(r.prediction_time)
@@ -222,6 +305,7 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
                'label_horizon_end': pd.NaT, 'label_event_time': pd.NaT,
                'label_confirmation_time': pd.NaT, 'label_censor_time': pd.NaT,
                'label_version': LABEL_VERSION, 'label_reversal_time': pd.NaT,
+               'label_max_update_seconds': LABEL_MAX_UPDATE_SECONDS,
                'label_gap_pairs': 0, 'label_evidence_window_seconds': evidence_seconds,
                'label_gap_pair_skew_seconds': gap_pair_skew_seconds,
                'label_min_gap_pairs': min_gap_pairs,
@@ -230,6 +314,8 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
                'label_gap_attacker': float('nan'), 'label_gap_defender': float('nan')}
 
         outputs.append(out)
+        # battle_ready uses prediction-time eligibility. Retrospective quality
+        # still gates labels, but must not reset the candidate's battle history.
         if not r.offline_eligible or not r.battle_ready:
             continue
         current = lap_at(laps, a, start)
@@ -283,7 +369,11 @@ def make_labels(candidates, data, horizon_laps=3, confirmation_seconds=10.0,
         elif cut is not None:
             out['label_reason'] = reason
         else:
-            out.update(target_overtake_3lap=0, label_reason='no_observed_pass')
+            ambiguous_at, ambiguous_reason = negative_evidence_problem(a, d, start, end)
+            if ambiguous_at is not None:
+                out.update(label_reason=ambiguous_reason, label_censor_time=ambiguous_at)
+            else:
+                out.update(target_overtake_3lap=0, label_reason='no_observed_pass')
     result = candidates.copy().reset_index(drop=True)
     audit = pd.DataFrame(outputs)
     for column in audit:
@@ -305,6 +395,8 @@ def validate_labels(labeled, data):
                    timestamp(r['date'])) for r in data['overtakes']}
     raw_gaps = {(int(r['driver_number']), timestamp(r['date'])): r.get('gap_to_leader')
                 for r in data['intervals']}
+    raw_intervals = {(int(r['driver_number']), timestamp(r['date'])): r.get('interval')
+                     for r in data['intervals']}
     positions = defaultdict(list)
     raw_laps = defaultdict(list)
     for r in data['position']:
@@ -399,7 +491,7 @@ def validate_labels(labeled, data):
                 fresh = updates[bisect_right(updates, left):bisect_right(updates, right)]
                 if current_rank != 1:
                     chain = ([last] if last is not None else []) + fresh + [right]
-                    if last is None or any((b - a).total_seconds() > Config().max_update_seconds
+                    if last is None or any((b - a).total_seconds() > LABEL_MAX_UPDATE_SECONDS
                                            for a, b in zip(chain, chain[1:])):
                         problems.add('raw_interval_coverage')
                 if fresh:
@@ -407,12 +499,85 @@ def validate_labels(labeled, data):
                 previous_rank = current_rank
         return problems
 
+    def raw_negative_evidence_errors(a, d, start, end, skew):
+        # Reconstruct snapshots from raw records rather than trusting emitted
+        # ambiguity flags or reusing the generation helper.
+        knots = {start}
+        for driver in (a, d):
+            for source_times in (update_times[driver], times.get(driver, []),
+                                 raw_start_times.get(driver, [])):
+                knots.update(x for x in source_times if start < x <= end)
+        def numeric(value):
+            return (not isinstance(value, bool) and isinstance(value, (int, float))
+                    and math.isfinite(value) and value >= 0)
+        run_count = 0
+        last_counted = None
+        last_order = None
+        for at in sorted(knots):
+            snapshots = {}
+            for driver in (a, d):
+                ts = update_times[driver]
+                i = bisect_right(ts, at) - 1
+                if i < 0:
+                    if rank(driver, at) != 1:
+                        return {'raw_negative_interval_missing'}
+                    continue
+                source_at = ts[i]
+                gap = raw_gaps[driver, source_at]
+                if rank(driver, at) != 1 and (
+                    not numeric(raw_intervals[driver, source_at]) and not numeric(gap)
+                ):
+                    return {'raw_negative_interval_missing'}
+                li = bisect_right(raw_start_times.get(driver, []), at) - 1
+                lap = raw_laps[driver][li]['lap_number'] if li >= 0 else None
+                snapshots[driver] = (source_at, gap, lap, rank(driver, at))
+            # Resolve rank/lap context independently of gap comparability.
+            context = []
+            for driver in (a, d):
+                li = bisect_right(raw_start_times.get(driver, []), at) - 1
+                context.append((raw_laps[driver][li]['lap_number'] if li >= 0 else None,
+                                rank(driver, at)))
+            ordering = None
+            if all(lap is not None and place is not None for lap, place in context):
+                ordering = (context[0][0], context[1][0], context[0][1], context[1][1])
+            if ordering is not None and ordering != last_order:
+                run_count = 0
+                last_counted = None
+            if ordering is not None:
+                last_order = ordering
+            if a not in snapshots or d not in snapshots:
+                continue
+            ta, ga, la, pa = snapshots[a]
+            td, gd, ld, pd_ = snapshots[d]
+            comparable = (
+                numeric(ga) and numeric(gd) and ga != gd and la is not None and la == ld
+                and pa is not None and pd_ is not None and pa != pd_
+                and abs((ta - td).total_seconds()) <= skew
+                and (at - min(ta, td)).total_seconds() <= LABEL_MAX_UPDATE_SECONDS
+            )
+            if not comparable:
+                continue
+            if (ga < gd) == (pa < pd_):
+                run_count = 0
+                last_counted = None
+                continue
+            if last_counted is None or (ta > last_counted[0] and td > last_counted[1]):
+                run_count += 1
+                last_counted = (ta, td)
+                if run_count >= NEGATIVE_CONFLICT_MIN_PAIRS:
+                    return {'raw_negative_gap_position_conflict'}
+        return set()
+
     errors = []
     def check(condition, row, name):
         if not condition:
             errors.append((row, name))
     for index, r in enumerate(labeled.itertuples(index=False)):
         check(r.label_version == LABEL_VERSION, index, 'version')
+        # Legacy v2 files used the same fixed 10-second policy without a column.
+        # Reject conflicting metadata instead of trusting it as a new policy.
+        check(getattr(r, 'label_max_update_seconds', 10.0) == LABEL_MAX_UPDATE_SECONDS,
+              index, 'observation_policy')
         if pd.isna(r.target_overtake_3lap):
             continue
         y = r.target_overtake_3lap
@@ -447,6 +612,8 @@ def validate_labels(labeled, data):
             check(rank(a, confirmed) is not None and rank(d, confirmed) is not None
                   and rank(a, confirmed) < rank(d, confirmed), index, 'confirmed_order')
         else:
+            for problem in raw_negative_evidence_errors(a, d, start, end, r.label_gap_pair_skew_seconds):
+                check(False, index, problem)
             check(r.label_reason == 'no_observed_pass', index, 'negative_reason')
             check(pd.isna(r.label_event_time) and pd.isna(r.label_confirmation_time)
                   and pd.isna(r.label_censor_time), index, 'negative_metadata')

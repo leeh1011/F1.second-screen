@@ -2,7 +2,7 @@
 
 import { AiCommentaryCard } from "@/components/commentary/AiCommentaryCard";
 import { SessionHeader } from "@/components/dashboard/SessionHeader";
-import { OvertakePanel } from "@/components/overtake/OvertakePanel";
+import { ReplayPredictionPanel } from "@/components/overtake/ReplayPredictionPanel";
 import { TelemetryPanel } from "@/components/telemetry/TelemetryPanel";
 import { TrackMap } from "@/components/track/TrackMap";
 import { useOpenF1Session } from "@/hooks/useOpenF1Session";
@@ -46,7 +46,7 @@ export function DashboardShell() {
 
         {/* Right Column: Overtake Battle & Driver Telemetry Leaderboard */}
         <div className="space-y-6">
-          <OvertakePanel overtake={sessionData.isUpcoming ? null : sessionData.overtake} />
+          <ReplayPredictionPanel key={`${selectedYear}-${selectedSessionKey}`} sessionKey={selectedSessionKey} />
           <TelemetryPanel
             telemetry={sessionData.telemetry}
             cars={sessionData.cars}

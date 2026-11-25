@@ -19,7 +19,7 @@ class Config:
     min_pace_laps: int = 2
 
 
-CONTROL_POLICY_VERSION = "ending-track-clear-sc-replaces-vsc-v3"
+CONTROL_POLICY_VERSION = "ending-then-track-clear-v2"
 
 
 @lru_cache(maxsize=200000)
@@ -111,9 +111,16 @@ def build_control(rows):
         elif match and ('CLEAR' in msg or 'GREEN' in msg):
             yellow.discard(sector_key)
 
-        known_sc = any(token in msg for token in (
-            'DEPLOYED', 'ENDING', 'IN THIS LAP',
-        )) or explicit_green
+        known_sc = (
+            any(token in msg for token in (
+                'DEPLOYED', 'ENDING', 'IN THIS LAP',
+            ))
+            or explicit_green
+            or (
+                msg == 'SAFETY CAR THROUGH THE PIT LANE'
+                and 'SC' in neutral
+            )
+        )
         if category == 'SafetyCar' and not known_sc:
             neutral.add('UNKNOWN_CONTROL')
             unresolved.append(msg)
@@ -284,6 +291,15 @@ def extract_candidates(race_data, config=Config()):
             stints.setdefault(int(s['driver_number']), []).append(s)
     positions = sorted(race_data['position'], key=lambda r: timestamp(r['date']))
     intervals = sorted(race_data['intervals'], key=lambda r: timestamp(r['date']))
+    # Undated pit records are usable only for retrospective quality checks.
+    # Consume dated entries at their event time, never at the start of the lap.
+    pit_entries = sorted(
+        [(timestamp(r['date']), int(r['driver_number']))
+         for r in race_data['pit'] if r.get('date')],
+        key=lambda entry: entry[0],
+    )
+    observed_pits = {}
+    pit_cursor = 0
     seen = set()
     for raw in intervals:
         key = (raw['driver_number'], timestamp(raw['date']))
@@ -299,6 +315,14 @@ def extract_candidates(race_data, config=Config()):
         at = timestamp(raw['date'])
         attacker = int(raw['driver_number'])
         gap = raw.get('interval')
+        while pit_cursor < len(pit_entries) and pit_entries[pit_cursor][0] <= at:
+            pit_time, pit_driver = pit_entries[pit_cursor]
+            observed_pits[pit_driver] = pit_time
+            for key in list(active):
+                if key == pit_driver or active[key]['defender'] == pit_driver:
+                    active.pop(key, None)
+            last_gaps.pop(pit_driver, None)
+            pit_cursor += 1
         while p < len(positions) and timestamp(positions[p]['date']) <= at:
             changed_driver = int(positions[p]['driver_number'])
             new_position = positions[p]['position']
@@ -344,6 +368,7 @@ def extract_candidates(race_data, config=Config()):
             'lap_alignment_uncertain': a_lap['number'] != d_lap['number'],
             'pit_related_lap': False, 'observation_end_unknown': False,
             'after_last_observed_lap': False,
+            'pit_observed': False,
         }
         for role, driver, lap in [('attacker', attacker, a_lap), ('defender', defender, d_lap)]:
             compound, age, transition = tyre_at(stints, driver, lap['number'])
@@ -353,6 +378,13 @@ def extract_candidates(race_data, config=Config()):
                         f'{role}_recent_pace': pace, f'{role}_pace_lap_count': count,
                         f'{role}_tyre_transition_lap': transition})
             row['pit_related_lap'] |= lap['pit_lap'] or lap['out_lap'] or transition
+            # Current out-lap/stint state and pit entries already observed are
+            # prediction-time conditions; a future in-lap pit flag is not.
+            pit_time = observed_pits.get(driver)
+            row['pit_observed'] |= (
+                lap['out_lap'] or transition
+                or (pit_time is not None and pit_time >= lap['start'])
+            )
             row['observation_end_unknown'] |= lap['end'] is None
             row['after_last_observed_lap'] |= lap['end'] is not None and at >= lap['end']
         row['tyre_features_missing'] = any(row[k] is None for k in (
@@ -372,17 +404,22 @@ def extract_candidates(race_data, config=Config()):
             if age_seconds <= config.max_update_seconds and finite(saved[1]) and saved[1] > 0 and same_front:
                 row['defender_gap_ahead'] = float(saved[1])
                 row['defender_in_train'] = int(saved[1] <= 1)
-        excluded = [key for key in (
+        prediction_excluded = [key for key in (
             'first_lap', 'neutralized', 'yellow_active', 'retired_confirmed',
-            'lap_alignment_uncertain', 'pit_related_lap', 'observation_end_unknown',
-            'after_last_observed_lap', 'tyre_features_missing') if row[key]]
+            'lap_alignment_uncertain', 'pit_observed', 'tyre_features_missing') if row[key]]
+        row['prediction_exclusion_reasons'] = '|'.join(prediction_excluded)
+        row['prediction_eligible'] = not prediction_excluded
+        # These future-derived flags gate labels only, never battle state.
+        excluded = prediction_excluded + [key for key in (
+            'pit_related_lap', 'observation_end_unknown',
+            'after_last_observed_lap') if row[key]]
         row['exclusion_reasons'] = '|'.join(excluded)
         row['offline_eligible'] = not excluded
         row.update({'battle_id': None, 'battle_age_seconds': None, 'battle_ready': False,
                     'time_within_1_sec': None, 'gap_mean_last_lap': None,
                     'gap_trend_last_lap': None, 'gap_1_lap_ago': None,
                     'gap_history_complete': False, 'gap_history_window_seconds': None})
-        if [reason for reason in excluded if reason != 'lap_alignment_uncertain']:
+        if [reason for reason in prediction_excluded if reason != 'lap_alignment_uncertain']:
             active.pop(attacker, None)
         else:
             battle = active.get(attacker)
@@ -411,7 +448,7 @@ def extract_candidates(race_data, config=Config()):
                 duration = data['completed'][ci]['duration'] if ci >= 0 else None
                 row.update(history_features(battle['points'], at, float(gap), duration))
                 row.update({'battle_id': battle['id'], 'battle_age_seconds': age_seconds,
-                            'battle_ready': row['offline_eligible'] and age_seconds >= config.min_battle_seconds,
+                            'battle_ready': row['prediction_eligible'] and age_seconds >= config.min_battle_seconds,
                             'time_within_1_sec': (at - battle['within']).total_seconds() if battle['within'] is not None else 0.0})
         result.append(row)
     if not result:
@@ -436,11 +473,12 @@ def main():
         print(f'{key}: {value}')
     flags = ['first_lap', 'neutralized', 'yellow_active', 'retired_confirmed',
              'lap_alignment_uncertain', 'pit_related_lap', 'observation_end_unknown',
-             'after_last_observed_lap', 'tyre_features_missing']
+             'after_last_observed_lap', 'pit_observed', 'tyre_features_missing']
     print('\n=== 제외 표시 (중복 가능) ===')
     print(prepared[flags].sum().to_string())
     print('\n=== 배틀 및 피처 집계 ===')
     print(f'후보 관측: {len(prepared)}')
+    print(f'예측 시점 조건 통과: {prepared.prediction_eligible.sum()}')
     print(f'사후 품질 조건 통과: {prepared.offline_eligible.sum()}')
     print(f'배틀 에피소드: {prepared.battle_id.nunique()}')
     ready = prepared[prepared.battle_ready]

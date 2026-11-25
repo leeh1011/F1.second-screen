@@ -22,42 +22,18 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
+from app.ml.replay_features import TARGET, NUMERIC, CATEGORICAL, FEATURES, feature_frame
+
 ROOT = Path(__file__).resolve().parents[2]
-TARGET = 'target_overtake_3lap'
-CATEGORICAL = ['attacker_compound', 'defender_compound']
-NUMERIC = [
-    'gap', 'attacker_position', 'defender_position',
-    'attacker_lap', 'defender_lap', 'seconds_since_lap_start',
-    'attacker_tyre_age', 'defender_tyre_age', 'tyre_age_diff',
-    'attacker_recent_pace', 'defender_recent_pace', 'recent_race_pace_diff',
-    'attacker_pace_lap_count', 'defender_pace_lap_count',
-    'battle_age_seconds', 'time_within_1_sec',
-    'gap_mean_last_lap', 'gap_trend_last_lap', 'gap_1_lap_ago',
-    'gap_history_complete', 'gap_history_window_seconds',
-    'defender_gap_ahead', 'defender_in_train', 'defender_is_leader',
-]
-FEATURES = NUMERIC + CATEGORICAL
+
 IDENTITY = ['session_key', 'prediction_time', 'attacker_number', 'defender_number']
-
-
-def feature_frame(frame):
-    missing = set(FEATURES) - set(frame.columns)
-    if missing:
-        raise ValueError(f'Missing features: {sorted(missing)}')
-    out = frame[FEATURES].copy()
-    for name in NUMERIC:
-        out[name] = pd.to_numeric(out[name], errors='raise').astype('float64')
-    if np.isinf(out[NUMERIC].to_numpy()).any():
-        raise ValueError('Infinite numeric feature')
-    for name in CATEGORICAL:
-        out[name] = out[name].map(lambda value: str(value) if pd.notna(value) else np.nan)
-    return out
 
 
 def load_dataset(processed_root, sessions):
     if len(sessions) < 3 or len(set(sessions)) != len(sessions):
         raise ValueError('Provide at least three distinct session keys')
     frames, sources = [], []
+    label_policies = set()
     required = set(FEATURES + IDENTITY + [TARGET, 'battle_id', 'battle_ready',
                                         'offline_eligible', 'label_version'])
     for key in sessions:
@@ -67,6 +43,26 @@ def load_dataset(processed_root, sessions):
             raise ValueError(f'{path}: missing columns {sorted(required - set(frame.columns))}')
         if frame.empty or not frame.session_key.eq(key).all():
             raise ValueError(f'{path}: empty file or mismatched session_key')
+        versions = set(frame.label_version)
+        supported = {'v2-gap-evidence', 'v2-gap-evidence-negative-guard-v1',
+                     'v2-gap-evidence-negative-guard-v2',
+                     'v2-gap-evidence-negative-guard-v3'}
+        if len(versions) != 1 or not versions <= supported:
+            raise ValueError(f'{path}: unsupported or mixed label versions')
+        version = next(iter(versions))
+        if 'label_max_update_seconds' not in frame:
+            if version != 'v2-gap-evidence':
+                raise ValueError(f'{path}: missing observation policy metadata')
+            limits = {10.0}
+        else:
+            if any(isinstance(v, (bool, np.bool_)) for v in frame.label_max_update_seconds):
+                raise ValueError(f'{path}: boolean observation limit')
+            limits = set(pd.to_numeric(frame.label_max_update_seconds, errors='raise'))
+        if len(limits) != 1 or any(not np.isfinite(v) or v <= 0 for v in limits):
+            raise ValueError(f'{path}: invalid or mixed observation limits')
+        label_policies.add((version, float(next(iter(limits)))))
+        if len(label_policies) != 1:
+            raise ValueError('Do not mix label versions or observation limits across races')
         known = frame[TARGET].notna()
         if not frame.loc[known, TARGET].isin([0, 1]).all():
             raise ValueError(f'{path}: target must be 0, 1 or NA')
@@ -81,14 +77,16 @@ def load_dataset(processed_root, sessions):
         selected[TARGET] = selected[TARGET].astype(int)
         frames.append(selected)
         sources.append({'session_key': key, 'path': str(path.resolve()),
+                        'label_version': version,
+                        'label_max_update_seconds': float(next(iter(limits))),
                         'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                         'total_rows': len(frame), 'known_rows': len(selected),
                         'positive_rows': int(selected[TARGET].sum())})
     data = pd.concat(frames, ignore_index=True).sort_values(IDENTITY).reset_index(drop=True)
     if data.duplicated(['session_key', 'attacker_number', 'prediction_time']).any():
         raise ValueError('Duplicate attacker observations')
-    if set(data.label_version) != {'v2-gap-evidence'}:
-        raise ValueError('Expected label_version v2-gap-evidence')
+    if len(set(data.label_version)) != 1:
+        raise ValueError('Expected one consistent label version')
     feature_frame(data)
     data['row_id'] = np.arange(len(data))
     return data, sources

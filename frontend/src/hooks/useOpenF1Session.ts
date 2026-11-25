@@ -185,10 +185,6 @@ export function useOpenF1Session() {
       };
     });
 
-    // Build Overtake Opportunity between P1 and P2 if available
-    const attacker = telemetryList[1]?.code || "P2";
-    const defender = telemetryList[0]?.code || "P1";
-
     setSessionData({
       sessionName: sessionTitle,
       circuitName: circuitTitle,
@@ -197,16 +193,7 @@ export function useOpenF1Session() {
       status: "replay",
       cars: carsList,
       telemetry: telemetryList,
-      overtake: {
-        attackerCode: attacker,
-        defenderCode: defender,
-        successProbability: 0.76,
-        factors: [
-          `OpenF1 Data: ${attacker} DRS Zone Pursuit`,
-          `P1 (${defender}) ERS Battery Management Mode`,
-          `Sector 2 Acceleration Gap: 0.312s`,
-        ],
-      },
+      overtake: null,
       commentary: {
         text: `OpenF1 Official Stream: Live telemetry loaded for ${targetSession.location} (${targetSession.session_name}). ${sortedDrivers.length} drivers recorded on grid.`,
         generatedAt: new Date().toLocaleTimeString(),
