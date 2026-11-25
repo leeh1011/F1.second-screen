@@ -1,0 +1,43 @@
+import type { Driver, LiveState, ReplayData, ReplaySummary } from "@/types";
+import mockDrivers from "../../public/drivers.json";
+import mockLive from "../../public/mock/live.json";
+import mockReplay from "../../public/mock/replay.json";
+import mockReplayList from "../../public/mock/replays.json";
+
+
+// 백엔드 주소. 설정하지 않으면 mock 데이터를 사용한다.
+// 예) .env.local 에 NEXT_PUBLIC_API_URL=http://localhost:8000
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+async function request<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
+  if (!res.ok) throw new Error("서버 오류: " + res.status);
+  return res.json();
+}
+
+// 드라이버 목록: GET /api/drivers
+export async function getDrivers(): Promise<Driver[]> {
+  if (!API_URL) return mockDrivers as Driver[];
+  return request<Driver[]>("/api/drivers");
+}
+
+// 드라이버 한 명: 목록에서 id로 찾는다 (상세 API가 생기면 교체)
+export async function getDriver(id: number): Promise<Driver | undefined> {
+  const drivers = await getDrivers();
+  return drivers.find((d) => d.id === id);
+}
+
+export async function getLiveState():Promise<LiveState>{
+  return mockLive as LiveState;
+}
+
+// 리플레이 경기 목록 (지금은 mock, 백엔드의 배틀 후보 목록 API가 나오면 교체)
+export async function getReplayList(): Promise<ReplaySummary[]> {
+  return mockReplayList as ReplaySummary[];
+}
+
+// 리플레이 데이터: 경기 id로 찾는다. 재생할 수 없는 경기면 null
+export async function getReplay(raceId = "2024-bahrain"): Promise<ReplayData | null> {
+  if (raceId === "2024-bahrain") return mockReplay as ReplayData;
+  return null;
+}

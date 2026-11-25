@@ -7,12 +7,14 @@ import BattleCard from "@/components/BattleCard";
 import StandingsTable from "@/components/StandingsTable";
 import EventFeed from "@/components/EventFeed";
 import ReplayControls from "@/components/ReplayControls";
+import TeamTheme from "@/components/TeamTheme";
 import BattleDetail from "@/components/BattleDetail";
 import AlertSettings from "@/components/AlertSettings";
 import AlertToast from "@/components/AlertToast";
 import { computeAlerts } from "@/lib/alerts";
 import { requestNotificationPermission, showSystemNotification } from "@/lib/notify";
 import { getReplay } from "@/lib/api";
+import { seasonOf, teamOfDriver } from "@/lib/teams";
 import type { ReplayData } from "@/types";
 
 export default function LivePage({
@@ -160,8 +162,13 @@ export default function LivePage({
     .slice(0, 3);
   const battleCodes = top3.flatMap((b) => [b.attacker_code, b.defender_code]);
 
+  // 선두 팀 색이 화면 전체의 테마가 된다
+  const season = seasonOf(state.race_name);
+  const leaderTeam = teamOfDriver(state.standings[0]?.code ?? "", season);
+
   return (
     <div className="live">
+      <TeamTheme team={leaderTeam} />
       <p className="mode-tag">
         <span className="mode-dot" aria-hidden="true" />
         리플레이 · 저장된 경기 기록을 실시간처럼 재생해요
@@ -178,6 +185,9 @@ export default function LivePage({
       <div className="live-grid">
         <section aria-labelledby="battles-title">
           <h2 id="battles-title" className="section-title">추월 가능성이 높은 배틀</h2>
+          <p className="section-note">
+            채워진 점이 추격차, 빈 점이 앞차예요. 색은 각 드라이버의 팀 색입니다.
+          </p>
           {pauseReason ? (
             <>
               <p className="pause-banner" role="status">
@@ -191,6 +201,7 @@ export default function LivePage({
                       key={b.battle_id}
                       battle={b}
                       prevProbability={null}
+                      season={season}
                       onSelect={() => setSelectedId(b.battle_id)}
                       pausedLabel="경기 재개 후 다시 계산"
                     />
@@ -207,6 +218,7 @@ export default function LivePage({
                   battle={b}
                   prevProbability={prevProbability(b.battle_id)}
                   featured={i === 0}
+                  season={season}
                   onSelect={() => setSelectedId(b.battle_id)}
                 />
               ))}
@@ -216,7 +228,7 @@ export default function LivePage({
         <div className="live-side">
           <section aria-labelledby="standings-title">
             <h2 id="standings-title" className="section-title">순위</h2>
-            <StandingsTable standings={state.standings} battleCodes={battleCodes} />
+            <StandingsTable standings={state.standings} battleCodes={battleCodes} season={season} />
           </section>
           <section aria-labelledby="events-title">
             <h2 id="events-title" className="section-title">최근 이벤트</h2>
@@ -238,6 +250,7 @@ export default function LivePage({
         <BattleDetail
           battleId={selectedId}
           battle={selectedBattle}
+          season={season}
           attackerCode={selectedOrigin?.attacker_code ?? ""}
           defenderCode={selectedOrigin?.defender_code ?? ""}
           outcome={selectedOutcome}

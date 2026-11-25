@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import TeamTheme from "@/components/TeamTheme";
 import { getDriver } from "@/lib/api";
-import { teamColor } from "@/lib/teams";
+import { themeFor } from "@/lib/teams";
 
 export default async function DriverDetailPage({
   params,
@@ -14,19 +15,25 @@ export default async function DriverDetailPage({
 
   if (!driver) notFound();
 
+  const theme = themeFor(driver.team);
+
   return (
     <div className="detail">
+      <TeamTheme team={driver.team} />
       <Link href="/drivers" className="back-link">
         ← 목록으로
       </Link>
       <section
         className="driver-hero"
-        style={{ "--team": teamColor(driver.team) } as CSSProperties}
+        style={{ "--team": theme.accent, "--on-team": theme.on } as CSSProperties}
       >
         <span className="driver-hero-number">{driver.number}</span>
         <div>
           <h1 className="driver-hero-name">{driver.name}</h1>
-          <p className="driver-hero-meta">{driver.team}, {driver.code}</p>
+          <p className="driver-hero-meta">
+            <span className="driver-tag">{driver.code}</span>
+            {driver.team}
+          </p>
         </div>
       </section>
     </div>

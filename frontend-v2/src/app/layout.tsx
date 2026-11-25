@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, IBM_Plex_Sans_KR } from "next/font/google";
+import { Sofia_Sans_Extra_Condensed, IBM_Plex_Sans_KR } from "next/font/google";
 import Link from "next/link";
 import NavLinks from "@/components/NavLinks";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
-// 숫자·드라이버 코드용 (한글 없음)
-const display = Big_Shoulders({
+// 숫자·드라이버 코드용 (한글 없음). 방송 그래픽처럼 기울어진 극세폭 글꼴.
+const display = Sofia_Sans_Extra_Condensed({
   subsets: ["latin"],
+  style: ["italic"],
   variable: "--font-display",
   display: "swap",
 });
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#20252b",
+  themeColor: "#131619",
 };
 
 export default function RootLayout({children,}: Readonly<{ children: React.ReactNode }>) {
