@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { teamColor } from "@/lib/teams";
+import { themeFor } from "@/lib/teams";
 
 type CardProps = {
   name: string;
@@ -9,14 +9,18 @@ type CardProps = {
 };
 
 function Card({ name, team, number, code }: CardProps) {
+  const theme = themeFor(team);
   return (
-    <div className="driver-row" style={{ "--team": teamColor(team) } as CSSProperties}>
+    <div
+      className="driver-row"
+      style={{ "--team": theme.accent, "--on-team": theme.on } as CSSProperties}
+    >
       <span className="driver-number">{number}</span>
       <div>
         <h2 className="driver-name">{name}</h2>
         <p className="driver-team">{team}</p>
       </div>
-      {code && <span className="driver-code">{code}</span>}
+      {code && <span className="driver-tag">{code}</span>}
     </div>
   );
 }

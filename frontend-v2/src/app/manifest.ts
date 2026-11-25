@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone", // 주소창 없이 앱처럼 열기
     orientation: "any",
-    background_color: "#20252b", // --tarmac
-    theme_color: "#20252b",
+    background_color: "#131619", // --tarmac
+    theme_color: "#131619",
     lang: "ko",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

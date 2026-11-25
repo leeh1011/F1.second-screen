@@ -1,13 +1,16 @@
+import type { CSSProperties } from "react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
 import type { Battle, LiveEvent } from "@/types";
 import TyreMark from "./TyreMark";
+import { teamOfDriver, themeFor } from "@/lib/teams";
 
 type HistoryPoint = { lap: number; probability: number | null; gap: number };
 
 type BattleDetailProps = {
   battleId: string;
+  season?: number; // 드라이버 코드 → 팀 매핑에 쓰는 시즌
   battle: Battle | undefined; // 지금 장면의 배틀 (끝났으면 undefined)
   attackerCode: string;
   defenderCode: string;
@@ -24,16 +27,25 @@ type BattleDetailProps = {
 const lapTick = (v: number) => `${v}랩`;
 
 function BattleDetail({
-  battleId, battle, attackerCode, defenderCode, outcome, pauseReason, history,
+  battleId, season, battle, attackerCode, defenderCode, outcome, pauseReason, history,
   lap, playing, atEnd, onTogglePlay, onClose,
 }: BattleDetailProps) {
   const first = history[0];
   const last = history[history.length - 1];
 
+  // 패널의 강조색은 추격차 팀 색, 앞차는 앞차 팀 색
+  const att = themeFor(teamOfDriver(attackerCode, season));
+  const def = themeFor(teamOfDriver(defenderCode, season));
+  const colors = {
+    "--accent": att.accent,
+    "--on-accent": att.on,
+    "--def": def.accent,
+  } as CSSProperties;
+
   return (
     <>
       <div className="detail-backdrop" onClick={onClose} />
-      <aside className="detail-panel" aria-label="배틀 상세">
+      <aside className="detail-panel" aria-label="배틀 상세" style={colors}>
         <header className="detail-head">
           <h2 className="section-title">배틀 상세</h2>
           <button type="button" className="detail-close" onClick={onClose}>
@@ -49,9 +61,13 @@ function BattleDetail({
         </div>
 
         <p className="detail-who">
-          <span className="who-code">{attackerCode}</span>
+          <span className="tag tag-att">
+            <span className="tag-code">{attackerCode}</span>
+          </span>
           <span className="detail-arrow">→</span>
-          <span className="who-code">{defenderCode}</span>
+          <span className="tag tag-def">
+            <span className="tag-code">{defenderCode}</span>
+          </span>
         </p>
 
         {!battle &&
@@ -83,9 +99,9 @@ function BattleDetail({
               <Line
                 type="monotone"
                 dataKey="probability"
-                stroke="var(--timing)"
+                stroke="var(--accent)"
                 strokeWidth={3}
-                dot={{ r: 4, fill: "var(--timing)" }}
+                dot={{ r: 4, fill: "var(--accent)" }}
                 connectNulls={false}
                 isAnimationActive={false}
               />

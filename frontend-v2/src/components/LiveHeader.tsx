@@ -12,13 +12,24 @@ const STATUS_LABEL: Record<LiveState["track_status"], string> = {
 };
 
 function LiveHeader({ liveState }: LiveHeaderProps) {
-  const { race_name, lap, total_laps, track_status } = liveState;
+  const { race_name, lap, total_laps, track_status, standings } = liveState;
   const progress = Math.min(100, Math.round((lap / total_laps) * 100));
+
+  // 선두 드라이버 태그: 색은 페이지 테마(=선두 팀 색)를 그대로 따라간다
+  const leader = standings[0]?.code;
 
   return (
     <div className="race-strip">
       <div className="race-top">
-        <h1 className="race-name">{race_name}</h1>
+        <div className="race-title">
+          {leader && (
+            <span className="tag tag-att">
+              <span className="tag-pos">Race Leader</span>
+              <span className="tag-code">{leader}</span>
+            </span>
+          )}
+          <h1 className="race-name">{race_name}</h1>
+        </div>
         <span className={`flag flag-${track_status.toLowerCase()}`}>
           {STATUS_LABEL[track_status]}
         </span>

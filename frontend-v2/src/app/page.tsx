@@ -1,6 +1,8 @@
 import Link from "next/link";
 import BattleCard from "@/components/BattleCard";
+import TeamTheme from "@/components/TeamTheme";
 import { getReplay, getReplayList } from "@/lib/api";
+import { seasonOf, teamOfDriver } from "@/lib/teams";
 
 export default async function Home() {
   const replays = await getReplayList();
@@ -11,9 +13,12 @@ export default async function Home() {
   const sample = first?.battles
     .filter((b) => b.probability !== null)
     .sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0))[0];
+  const season = first ? seasonOf(first.race_name) : undefined;
 
   return (
     <div className="home">
+      {/* 홈의 색은 예시 배틀 추격차의 팀 색 */}
+      {sample && <TeamTheme team={teamOfDriver(sample.attacker_code, season)} />}
       <div className="hero">
         <div>
           <h1 className="hero-title">
@@ -31,7 +36,7 @@ export default async function Home() {
 
         {first && sample && (
           <div>
-            <BattleCard battle={sample} prevProbability={null} featured />
+            <BattleCard battle={sample} prevProbability={null} featured season={season} />
             <p className="hero-sample-note">
               {first.race_name} {first.lap}랩 장면 예시
             </p>
